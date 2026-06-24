@@ -275,100 +275,26 @@ export const getOrdersByProduct =
 // ORDERS TREND
 // ==========================
 
-export const getOrdersByDate =
-  async (req, res) => {
-    try {
-      const match =
-        buildOrderFilter(
-          req.query.uploadId
-        );
+export const getOrdersByDate = async (req, res) => {
+  try {
+    const match = buildOrderFilter(req.query.uploadId);
 
-      const stats =
-        await Order.aggregate([
-          { $match: match },
+  
+    const formatted = data.map((item) => ({
+      month: item._id,
+      orders: item.orders,
+      revenue: item.revenue,
+    }));
 
-          {
-            $group: {
-              _id: {
-                year: {
-                  $year:
-                    "$orderDate",
-                },
+    res.json(formatted);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
 
-                month: {
-                  $month:
-                    "$orderDate",
-                },
-              },
-
-              orders: {
-                $sum: 1,
-              },
-
-              revenue: {
-                $sum: {
-                  $multiply: [
-                    "$price",
-                    "$quantity",
-                  ],
-                },
-              },
-            },
-          },
-
-          {
-            $sort: {
-              "_id.year": 1,
-              "_id.month": 1,
-            },
-          },
-        ]);
-
-      const monthNames = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ];
-
-      const formatted =
-        stats.map((item) => ({
-          month: `${
-            monthNames[
-              item._id.month -
-                1
-            ]
-          } ${
-            item._id.year
-          }`,
-
-          orders:
-            item.orders,
-
-          revenue:
-            item.revenue,
-        }));
-
-      res.json(formatted);
-    } catch (error) {
-      res.status(500).json({
-        message:
-          error.message,
-      });
-    }
-  };
-
-// ==========================
 // TOP CUSTOMERS
-// ==========================
 
 export const getTopCustomers =
   async (req, res) => {

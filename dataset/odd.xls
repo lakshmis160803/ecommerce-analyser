@@ -1,0 +1,31 @@
+orderId,customerName,productName,quantity,price,region,orderDate
+ORD1001,Aarav Sharma,Smart Watch,2,5000,North,2025-01-15
+ORD1002,Priya Nair,Bluetooth Speaker,3,3000,South,2025-01-22
+ORD1003,Rahul Gupta,Wireless Earbuds,5,2000,East,2025-02-05
+ORD1004,Ananya Das,Gaming Mouse,4,1500,West,2025-02-12
+ORD1005,Vikram Singh,Mechanical Keyboard,2,3500,North,2025-02-20
+ORD1006,Sneha Menon,Monitor 24 Inch,1,13000,South,2025-03-04
+ORD1007,Rohan Patel,External SSD,2,7000,East,2025-03-11
+ORD1008,Meera Iyer,USB Hub,8,800,West,2025-03-21
+ORD1009,Arjun Kumar,Smart Watch,4,5000,North,2025-04-03
+ORD1010,Diya Thomas,Bluetooth Speaker,5,3000,South,2025-04-18
+ORD1011,Karan Joshi,Wireless Earbuds,7,2000,East,2025-04-25
+ORD1012,Nisha Roy,Gaming Mouse,9,1500,West,2025-05-06
+ORD1013,Aditya Rao,Mechanical Keyboard,3,3500,North,2025-05-14
+ORD1014,Pooja Nair,Monitor 24 Inch,2,13000,South,2025-05-28
+ORD1015,Sanjay Pillai,External SSD,3,7000,East,2025-06-08
+ORD1016,Kavya Sharma,USB Hub,10,800,West,2025-06-19
+ORD1017,Akhil Menon,Smart Watch,6,5000,North,2025-07-05
+ORD1018,Ritika Verma,Bluetooth Speaker,7,3000,South,2025-07-16
+ORD1019,Manoj Das,Wireless Earbuds,10,2000,East,2025-07-24
+ORD1020,Neha Kapoor,Gaming Mouse,12,1500,West,2025-08-02
+ORD1021,Rakesh Nair,Mechanical Keyboard,5,3500,North,2025-08-13
+ORD1022,Asha Thomas,Monitor 24 Inch,3,13000,South,2025-08-22
+ORD1023,Deepak Roy,External SSD,4,7000,East,2025-09-03
+ORD1024,Ishita Gupta,USB Hub,15,800,West,2025-09-15
+ORD1025,Rohan Menon,Smart Watch,8,5000,North,2025-10-07
+ORD1026,Shruti Das,Bluetooth Speaker,9,3000,South,2025-10-19
+ORD1027,Aravind Kumar,Wireless Earbuds,13,2000,East,2025-11-04
+ORD1028,Tanya Kapoor,Gaming Mouse,14,1500,West,2025-11-18
+ORD1029,Sumit Sharma,Mechanical Keyboard,6,3500,North,2025-12-06
+ORD1030,Megha Nair,Monitor 24 Inch,4,13000,South,2025-12-21
