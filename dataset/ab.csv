@@ -1,0 +1,21 @@
+item_code,item_name,type,company,selling_price,purchase_price,inventory,units_sold,stars,location,added_on
+ITM101,Travel Backpack,Bags,Wildcraft,2499,1500,90,65,4.4,South,2026-01-03
+ITM102,Running Shoes,Footwear,Adidas,4999,3200,70,48,4.7,North,2026-01-07
+ITM103,Cotton T-Shirt,Clothing,Puma,999,450,200,140,4.3,West,2026-01-10
+ITM104,Denim Jeans,Clothing,Levis,2199,1300,120,88,4.5,East,2026-01-12
+ITM105,Leather Wallet,Accessories,Fossil,1799,1000,85,55,4.2,South,2026-01-15
+ITM106,Sports Cap,Accessories,Nike,799,350,160,110,4.1,North,2026-01-18
+ITM107,Sunglasses,Accessories,RayBan,5999,4200,50,35,4.8,West,2026-01-20
+ITM108,Water Bottle,Homeware,Milton,499,200,250,180,4.0,East,2026-01-23
+ITM109,Yoga Mat,Fitness,Decathlon,1499,800,140,95,4.4,South,2026-01-26
+ITM110,Dumbbell Set,Fitness,ProFit,3999,2500,60,40,4.6,North,2026-01-29
+ITM111,Office Chair,Furniture,GreenSoul,8999,6200,35,22,4.7,West,2026-02-02
+ITM112,Study Table,Furniture,Ikea,7499,5000,40,25,4.5,East,2026-02-05
+ITM113,Electric Kettle,Kitchen,Prestige,1999,1200,100,75,4.3,South,2026-02-08
+ITM114,Air Fryer,Kitchen,Philips,6999,4800,55,32,4.7,North,2026-02-11
+ITM115,Ceiling Fan,Home Appliances,Havells,3499,2200,80,52,4.4,West,2026-02-14
+ITM116,LED Bulb,Electricals,Wipro,299,120,300,210,4.2,East,2026-02-17
+ITM117,Extension Board,Electricals,Anchor,899,450,180,125,4.1,South,2026-02-20
+ITM118,Mixer Grinder,Kitchen,Bajaj,4499,3000,65,42,4.5,North,2026-02-23
+ITM119,Vacuum Cleaner,Home Appliances,Eureka Forbes,7999,5500,30,18,4.6,West,2026-02-26
+ITM120,Room Heater,Home Appliances,Usha,2999,1800,75,50,4.3,East,2026-03-01

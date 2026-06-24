@@ -1,0 +1,21 @@
+productId,productName,category,brand,price,costPrice,stock,soldUnits,rating,region,dateAdded
+P001,Wireless Earbuds,Electronics,Sony,2999,1800,120,85,4.5,South,2026-01-05
+P002,Bluetooth Speaker,Electronics,JBL,4999,3200,80,60,4.7,North,2026-01-10
+P003,Gaming Mouse,Accessories,Logitech,1499,900,150,110,4.4,West,2026-01-12
+P004,Mechanical Keyboard,Accessories,Redragon,3499,2200,90,45,4.6,East,2026-01-15
+P005,Smart Watch,Wearables,Noise,3999,2500,100,75,4.3,South,2026-01-18
+P006,Fitness Band,Wearables,Boat,1999,1200,130,95,4.2,North,2026-01-20
+P007,Laptop Stand,Accessories,AmazonBasics,999,500,200,140,4.1,West,2026-01-25
+P008,USB Hub,Accessories,Anker,1299,700,180,125,4.4,East,2026-01-28
+P009,Power Bank,Electronics,Mi,2499,1500,110,80,4.5,South,2026-02-01
+P010,Noise Cancelling Headphones,Electronics,Sony,8999,6000,60,35,4.8,North,2026-02-05
+P011,Monitor 24 Inch,Electronics,LG,12999,9000,40,22,4.7,West,2026-02-08
+P012,Webcam HD,Accessories,Logitech,2999,1800,95,70,4.3,East,2026-02-10
+P013,SSD 1TB,Storage,Samsung,6999,5000,75,55,4.8,South,2026-02-12
+P014,External HDD 2TB,Storage,Seagate,5499,3900,65,40,4.4,North,2026-02-15
+P015,Router WiFi 6,Networking,TP-Link,4499,3000,70,50,4.5,West,2026-02-18
+P016,Smartphone Stand,Accessories,Portronics,499,250,250,180,4.0,East,2026-02-20
+P017,Wireless Charger,Accessories,Spigen,1799,1000,140,100,4.3,South,2026-02-22
+P018,Tablet 10 Inch,Electronics,Lenovo,18999,14500,30,18,4.6,North,2026-02-25
+P019,Graphic Tablet,Accessories,Wacom,7999,6000,35,20,4.7,West,2026-02-28
+P020,Portable Projector,Electronics,Epson,24999,18000,20,10,4.8,East,2026-03-01

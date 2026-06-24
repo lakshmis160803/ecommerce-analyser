@@ -1,0 +1,31 @@
+orderId,customerName,productName,quantity,price,region,orderDate
+ORD7001,Aarav Sharma,Smart Watch,3,4999,North,2025-09-01
+ORD7002,Priya Nair,Bluetooth Speaker,5,2999,South,2025-09-02
+ORD7003,Rahul Gupta,Wireless Earbuds,8,1999,East,2025-09-03
+ORD7004,Ananya Das,Laptop Stand,6,899,West,2025-09-03
+ORD7005,Vikram Singh,Gaming Mouse,10,1499,North,2025-09-04
+ORD7006,Sneha Menon,Mechanical Keyboard,4,3499,South,2025-09-05
+ORD7007,Rohan Patel,USB Hub,12,799,East,2025-09-05
+ORD7008,Meera Iyer,External SSD,3,6999,West,2025-09-06
+ORD7009,Arjun Kumar,Webcam HD,7,2499,North,2025-09-07
+ORD7010,Diya Thomas,Monitor 24 Inch,2,12999,South,2025-09-08
+ORD7011,Karan Joshi,Wireless Earbuds,9,1999,East,2025-09-08
+ORD7012,Nisha Roy,Smart Watch,4,4999,West,2025-09-09
+ORD7013,Aditya Rao,Gaming Mouse,11,1499,North,2025-09-10
+ORD7014,Pooja Nair,Mechanical Keyboard,5,3499,South,2025-09-10
+ORD7015,Sanjay Pillai,Monitor 24 Inch,3,12999,East,2025-09-11
+ORD7016,Kavya Sharma,External SSD,4,6999,West,2025-09-12
+ORD7017,Akhil Menon,USB Hub,15,799,North,2025-09-12
+ORD7018,Ritika Verma,Smart Watch,6,4999,South,2025-09-13
+ORD7019,Manoj Das,Bluetooth Speaker,8,2999,East,2025-09-14
+ORD7020,Neha Kapoor,Wireless Earbuds,10,1999,West,2025-09-15
+ORD7021,Rakesh Nair,Gaming Mouse,14,1499,North,2025-09-16
+ORD7022,Asha Thomas,Laptop Stand,9,899,South,2025-09-16
+ORD7023,Deepak Roy,Monitor 24 Inch,4,12999,East,2025-09-17
+ORD7024,Ishita Gupta,Mechanical Keyboard,7,3499,West,2025-09-18
+ORD7025,Rohan Menon,External SSD,5,6999,North,2025-09-19
+ORD7026,Shruti Das,USB Hub,18,799,South,2025-09-20
+ORD7027,Aravind Kumar,Smart Watch,8,4999,East,2025-09-21
+ORD7028,Tanya Kapoor,Bluetooth Speaker,10,2999,West,2025-09-22
+ORD7029,Sumit Sharma,Wireless Earbuds,12,1999,North,2025-09-23
+ORD7030,Megha Nair,Gaming Mouse,16,1499,South,2025-09-24

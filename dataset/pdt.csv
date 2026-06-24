@@ -1,0 +1,21 @@
+SKU,Item Name,Product Type,Manufacturer,Selling Price,Purchase Cost,Available Qty,Units Sold,Customer Rating,Sales Region,Launch Date
+PR001,AirPods Pro Clone,Audio,TechBeat,2999,1800,120,85,4.5,South,2026-01-05
+PR002,Thunder Bass Speaker,Audio,SoundMax,4999,3200,80,60,4.7,North,2026-01-10
+PR003,RGB Strike Mouse,Gaming,GamerTech,1499,900,150,110,4.4,West,2026-01-12
+PR004,Titan Mechanical Keyboard,Gaming,KeyForce,3499,2200,90,45,4.6,East,2026-01-15
+PR005,Vision Smartwatch X,Wearables,FutureFit,3999,2500,100,75,4.3,South,2026-01-18
+PR006,ActiveFit Band,Wearables,MoveOn,1999,1200,130,95,4.2,North,2026-01-20
+PR007,ErgoLift Laptop Stand,Office,DeskPro,999,500,200,140,4.1,West,2026-01-25
+PR008,UltraConnect USB Hub,Accessories,ConnectX,1299,700,180,125,4.4,East,2026-01-28
+PR009,PowerVault 20000,Power,Voltix,2499,1500,110,80,4.5,South,2026-02-01
+PR010,SilenceMax Headphones,Audio,AcoustiQ,8999,6000,60,35,4.8,North,2026-02-05
+PR011,CrystalView Monitor,Displays,VisionTech,12999,9000,40,22,4.7,West,2026-02-08
+PR012,StreamCam HD,Cameras,CamZone,2999,1800,95,70,4.3,East,2026-02-10
+PR013,TurboSSD 1TB,Storage,DataCore,6999,5000,75,55,4.8,South,2026-02-12
+PR014,SafeStore HDD 2TB,Storage,DriveX,5499,3900,65,40,4.4,North,2026-02-15
+PR015,SpeedNet WiFi 6 Router,Networking,NetWave,4499,3000,70,50,4.5,West,2026-02-18
+PR016,Flexi Mobile Stand,Accessories,GripGo,499,250,250,180,4.0,East,2026-02-20
+PR017,MagCharge Wireless Pad,Power,ChargePro,1799,1000,140,100,4.3,South,2026-02-22
+PR018,TabMaster 10,Tablets,SmartTech,18999,14500,30,18,4.6,North,2026-02-25
+PR019,SketchPro Tablet,Creative,DesignHub,7999,6000,35,20,4.7,West,2026-02-28
+PR020,CinemaBeam Projector,Entertainment,ViewMax,24999,18000,20,10,4.8,East,2026-03-01
