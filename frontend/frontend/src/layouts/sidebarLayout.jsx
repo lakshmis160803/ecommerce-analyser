@@ -34,10 +34,9 @@ const Sidebar = () => {
           <NavLink
             to="/dashboard"
             className={({ isActive }) =>
-              `block p-3 rounded-lg ${
-                isActive
-                  ? "bg-violet-600 text-white"
-                  : "hover:bg-violet-100"
+              `block p-3 rounded-lg ${isActive
+                ? "bg-violet-600 text-white"
+                : "hover:bg-violet-100"
               }`
             }
           >
@@ -47,10 +46,9 @@ const Sidebar = () => {
           <NavLink
             to="/upload"
             className={({ isActive }) =>
-              `block p-3 rounded-lg ${
-                isActive
-                  ? "bg-violet-600 text-white"
-                  : "hover:bg-violet-100"
+              `block p-3 rounded-lg ${isActive
+                ? "bg-violet-600 text-white"
+                : "hover:bg-violet-100"
               }`
             }
           >
@@ -60,10 +58,9 @@ const Sidebar = () => {
           <NavLink
             to="/products"
             className={({ isActive }) =>
-              `block p-3 rounded-lg ${
-                isActive
-                  ? "bg-violet-600 text-white"
-                  : "hover:bg-violet-100"
+              `block p-3 rounded-lg ${isActive
+                ? "bg-violet-600 text-white"
+                : "hover:bg-violet-100"
               }`
             }
           >
@@ -73,10 +70,9 @@ const Sidebar = () => {
           <NavLink
             to="/orders"
             className={({ isActive }) =>
-              `block p-3 rounded-lg ${
-                isActive
-                  ? "bg-violet-600 text-white"
-                  : "hover:bg-violet-100"
+              `block p-3 rounded-lg ${isActive
+                ? "bg-violet-600 text-white"
+                : "hover:bg-violet-100"
               }`
             }
           >
@@ -86,10 +82,9 @@ const Sidebar = () => {
           <NavLink
             to="/customers"
             className={({ isActive }) =>
-              `block p-3 rounded-lg ${
-                isActive
-                  ? "bg-violet-600 text-white"
-                  : "hover:bg-violet-100"
+              `block p-3 rounded-lg ${isActive
+                ? "bg-violet-600 text-white"
+                : "hover:bg-violet-100"
               }`
             }
           >
@@ -99,10 +94,9 @@ const Sidebar = () => {
           <NavLink
             to="/regional"
             className={({ isActive }) =>
-              `block p-3 rounded-lg ${
-                isActive
-                  ? "bg-violet-600 text-white"
-                  : "hover:bg-violet-100"
+              `block p-3 rounded-lg ${isActive
+                ? "bg-violet-600 text-white"
+                : "hover:bg-violet-100"
               }`
             }
           >
@@ -112,10 +106,9 @@ const Sidebar = () => {
           <NavLink
             to="/inventory"
             className={({ isActive }) =>
-              `block p-3 rounded-lg ${
-                isActive
-                  ? "bg-violet-600 text-white"
-                  : "hover:bg-violet-100"
+              `block p-3 rounded-lg ${isActive
+                ? "bg-violet-600 text-white"
+                : "hover:bg-violet-100"
               }`
             }
           >
@@ -125,25 +118,24 @@ const Sidebar = () => {
           <NavLink
             to="/reports"
             className={({ isActive }) =>
-              `block p-3 rounded-lg ${
-                isActive
-                  ? "bg-violet-600 text-white"
-                  : "hover:bg-violet-100"
+              `block p-3 rounded-lg ${isActive
+                ? "bg-violet-600 text-white"
+                : "hover:bg-violet-100"
               }`
             }
           >
             Reports
           </NavLink>
         </nav>
-      {/* Logout Button */}
-      <div className="mt-auto pt-6 ">
-        <button
-          onClick={handleLogout}
-          className="w-full py-3 rounded-lg bg-red-500 hover:bg-red-600 text-white font-semibold transition"
-        >
-          Logout
-        </button>
-      </div>
+        {/* Logout Button */}
+        <div className="mt-auto pt-6 ">
+          <button
+            onClick={handleLogout}
+            className="w-full py-3 rounded-lg bg-red-500 hover:bg-red-600 text-white font-semibold transition"
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
 
