@@ -125,6 +125,7 @@ console.log("DETECTED TYPE:", fileType);
           try {
             const workbook = XLSX.read(e.target.result, {
               type: "binary",
+              cellDates: true,
             });
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json(sheet);

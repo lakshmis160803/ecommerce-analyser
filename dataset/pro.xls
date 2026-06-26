@@ -1,0 +1,21 @@
+productId,productName,category,brand,price,costPrice,stock,soldUnits,rating,region
+P1001,Wireless Earbuds Pro,Electronics,SoundWave,2499,1500,120,340,4.5,North
+P1002,Smart Watch X1,Electronics,Pulse,5999,3800,80,210,4.2,South
+P1003,Gaming Mouse RGB,Accessories,ClickTech,1299,700,200,580,4.6,West
+P1004,Mechanical Keyboard,Accessories,ClickTech,3499,2100,90,260,4.4,North
+P1005,Bluetooth Speaker Mini,Electronics,SoundWave,1899,1100,150,410,4.3,East
+P1006,USB-C Hub 7-in-1,Accessories,ConnectIt,1599,900,180,300,4.1,South
+P1007,External SSD 1TB,Storage,DataFort,7499,5200,60,150,4.7,East
+P1008,Monitor 24 Inch,Electronics,ViewMax,13999,9500,40,95,4.5,South
+P1009,Laptop Stand Aluminum,Accessories,ErgoLift,1199,650,220,470,4.0,West
+P1010,Webcam Full HD,Electronics,ClearView,2299,1300,100,260,4.2,North
+P1011,Noise Cancelling Headphones,Electronics,SoundWave,6499,4200,70,180,4.6,South
+P1012,Portable Charger 20000mAh,Accessories,PowerCell,1799,1000,160,390,4.3,East
+P1013,Smart Plug WiFi,Smart Home,HomeLync,899,500,210,520,4.1,West
+P1014,LED Desk Lamp,Home,BrightEdge,1499,800,130,310,4.4,North
+P1015,Wireless Charging Pad,Accessories,PowerCell,1099,600,170,360,4.2,South
+P1016,Action Camera 4K,Electronics,GoFrame,8999,6000,50,110,4.6,East
+P1017,Fitness Band,Wearables,Pulse,2199,1300,140,330,4.3,West
+P1018,Router Dual Band,Networking,ConnectIt,2899,1800,90,200,4.0,North
+P1019,Backpack Laptop 15.6in,Accessories,UrbanCarry,1999,1100,110,250,4.5,South
+P1020,Tablet Stand Foldable,Accessories,ErgoLift,799,400,250,560,4.1,East

@@ -1,18 +1,21 @@
 import Product from "../products/Product.js";
 import mongoose from "mongoose";
 
-// ✅ Reusable helper — builds filter from uploadId query param
-const buildMatchFilter = (uploadId) => {
+// ✅ Reusable helper — builds filter from uploadId query param + always scopes by user
+const buildMatchFilter = (uploadId, userId) => {
+  const filter = { userId: new mongoose.Types.ObjectId(userId) };
+
   if (uploadId && mongoose.Types.ObjectId.isValid(uploadId)) {
-    return { uploadId: new mongoose.Types.ObjectId(uploadId) };
+    filter.uploadId = new mongoose.Types.ObjectId(uploadId);
   }
-  return {}; // empty = all products
+
+  return filter;
 };
 
 // GET /api/products/top-products?uploadId=xxx
 export const getTopProducts = async (req, res) => {
   try {
-    const match = buildMatchFilter(req.query.uploadId);
+    const match = buildMatchFilter(req.query.uploadId, req.user.id);
 
     const products = await Product.find(match)
       .sort({ soldUnits: -1 })
@@ -27,7 +30,7 @@ export const getTopProducts = async (req, res) => {
 // GET /api/products/categories?uploadId=xxx
 export const getCategoryStats = async (req, res) => {
   try {
-    const match = buildMatchFilter(req.query.uploadId);
+    const match = buildMatchFilter(req.query.uploadId, req.user.id);
 
     const stats = await Product.aggregate([
       { $match: match },
@@ -51,7 +54,7 @@ export const getCategoryStats = async (req, res) => {
 // GET /api/products/regions?uploadId=xxx
 export const getRegionRevenue = async (req, res) => {
   try {
-    const match = buildMatchFilter(req.query.uploadId);
+    const match = buildMatchFilter(req.query.uploadId, req.user.id);
 
     const stats = await Product.aggregate([
       { $match: match },
@@ -75,42 +78,23 @@ export const getRegionRevenue = async (req, res) => {
 // GET /api/products/dashboard/:uploadId
 export const getDashboardStats = async (req, res) => {
   try {
-    const uploadId =
-      req.params.uploadId ||
-      req.query.uploadId;
+    const uploadId = req.params.uploadId || req.query.uploadId;
 
-    const match =
-      buildMatchFilter(uploadId);
+    const match = buildMatchFilter(uploadId, req.user.id);
 
-    const stats =
-      await Product.aggregate([
-        { $match: match },
-        {
-          $group: {
-            _id: null,
-            totalProducts: {
-              $sum: 1,
-            },
-            totalRevenue: {
-              $sum: {
-                $multiply: [
-                  "$price",
-                  "$soldUnits",
-                ],
-              },
-            },
-            totalStock: {
-              $sum: "$stock",
-            },
-            totalSoldUnits: {
-              $sum: "$soldUnits",
-            },
-            avgRating: {
-              $avg: "$rating",
-            },
-          },
+    const stats = await Product.aggregate([
+      { $match: match },
+      {
+        $group: {
+          _id: null,
+          totalProducts: { $sum: 1 },
+          totalRevenue: { $sum: { $multiply: ["$price", "$soldUnits"] } },
+          totalStock: { $sum: "$stock" },
+          totalSoldUnits: { $sum: "$soldUnits" },
+          avgRating: { $avg: "$rating" },
         },
-      ]);
+      },
+    ]);
 
     if (!stats.length) {
       return res.status(200).json({
@@ -122,126 +106,100 @@ export const getDashboardStats = async (req, res) => {
       });
     }
 
-    const { _id, ...result } =
-      stats[0];
+    const { _id, ...result } = stats[0];
 
     res.status(200).json(result);
   } catch (error) {
     console.error(error);
-
-    res.status(500).json({
-      message: error.message,
-    });
+    res.status(500).json({ message: error.message });
   }
 };
 
 export const getRatingDistribution = async (req, res) => {
   try {
-    const uploadId =
-      req.query.uploadId;
+    const match = buildMatchFilter(req.query.uploadId, req.user.id);
 
-    const match =
-      buildMatchFilter(uploadId);
-
-    const ratings =
-      await Product.aggregate([
-        { $match: match },
-        {
-          $bucket: {
-            groupBy: "$rating",
-            boundaries: [0, 1, 2, 3, 4, 5],
-            default: "Other",
-            output: {
-              count: { $sum: 1 },
-            },
-          },
+    const ratings = await Product.aggregate([
+      { $match: match },
+      {
+        $bucket: {
+          groupBy: "$rating",
+          boundaries: [0, 1, 2, 3, 4, 5],
+          default: "Other",
+          output: { count: { $sum: 1 } },
         },
-      ]);
+      },
+    ]);
 
     res.status(200).json(ratings);
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+    res.status(500).json({ message: error.message });
   }
 };
 
+export const getCategoryDistribution = async (req, res) => {
+  try {
+    const match = buildMatchFilter(req.query.uploadId, req.user.id);
 
-export const getCategoryDistribution =
-  async (req, res) => {
-    try {
-      const match =
-        buildMatchFilter(
-          req.query.uploadId
-        );
+    const data = await Product.aggregate([
+      { $match: match },
+      {
+        $group: {
+          _id: "$category",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
 
-      const data =
-        await Product.aggregate([
-          { $match: match },
-          {
-            $group: {
-              _id: "$category",
-              count: {
-                $sum: 1,
-              },
-            },
-          },
-        ]);
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
-      res.json(data);
-    } catch (error) {
-      res.status(500).json({
-        message: error.message,
-      });
-    }
-  };
+export const getPriceDistribution = async (req, res) => {
+  try {
+    const match = buildMatchFilter(req.query.uploadId, req.user.id);
 
+    const data = await Product.aggregate([
+      { $match: match },
+      {
+        $project: {
+          _id: 0,
+          productName: 1,
+          price: 1,
+        },
+      },
+      { $sort: { price: 1 } },
+    ]);
 
-  export const getPriceDistribution =
-  async (req, res) => {
-    try {
-      const match =
-        buildMatchFilter(
-          req.query.uploadId
-        );
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
-      const data =
-        await Product.aggregate([
-          { $match: match },
-          {
-            $bucket: {
-              groupBy: "$price",
-              boundaries: [
-                0,
-                500,
-                1000,
-                2000,
-                5000,
-                10000,
-              ],
-              default: "10000+",
-              output: {
-                count: {
-                  $sum: 1,
-                },
-              },
-            },
-          },
-        ]);
-
-      res.json(data);
-    } catch (error) {
-      res.status(500).json({
-        message: error.message,
-      });
-    }
-  };
 // POST /api/products
 export const createProduct = async (req, res) => {
   try {
-    const product = await Product.create(req.body);
+    const product = await Product.create({
+      ...req.body,
+      userId: req.user.id,
+    });
     res.status(201).json({ success: true, product });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getAllProducts = async (req, res) => {
+  try {
+    const match = buildMatchFilter(req.query.uploadId, req.user.id);
+
+    const products = await Product.find(match).sort({ soldUnits: -1 });
+
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };

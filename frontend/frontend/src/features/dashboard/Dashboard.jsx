@@ -14,6 +14,7 @@ import {
   Bar,
   XAxis,
   YAxis,
+  CartesianGrid,
 } from "recharts";
 const COLORS = [
   "#7C3AED",
@@ -165,30 +166,8 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-slate-100 flex">
       {/* Sidebar */}
-      <aside className="w-72 bg-white shadow-lg p-6">
-        <h2 className="text-2xl font-bold text-violet-600 mb-8">
-          Ecom Intelligence
-        </h2>
-
-        <nav className="space-y-3">
-          <Link to="/dashboard" className="block p-3 rounded-lg hover:bg-violet-100">Dashboard</Link>
-          <Link to="/upload" className="block p-3 rounded-lg hover:bg-violet-100">Upload Data</Link>
-          <Link to="/products" className="block p-3 rounded-lg hover:bg-violet-100">Product Analysis</Link>
-          <Link to="/customers" className="block p-3 rounded-lg hover:bg-violet-100">Customer Analysis</Link>
-          <Link to="/regional" className="block p-3 rounded-lg hover:bg-violet-100">Regional Analysis</Link>
-          <Link to="/orders" className="block p-3 rounded-lg hover:bg-violet-100">Order Analysis</Link>
-          <Link to="/inventory" className="block p-3 rounded-lg hover:bg-violet-100">Inventory Analysis</Link>
-          <Link to="/reports" className="block p-3 rounded-lg hover:bg-violet-100">Reports</Link>
-        </nav>
-
-        <button
-          onClick={handleLogout}
-          className="mt-10 w-full bg-red-500 text-white py-3 rounded-lg"
-        >
-          Logout
-        </button>
-      </aside>
-
+     
+     
       {/* Main Content */}
       <main className="flex-1 p-10">
         <div className="bg-white rounded-xl shadow p-8">
@@ -300,16 +279,34 @@ const Dashboard = () => {
   </div>
 
   <div className="bg-white p-6 rounded-xl shadow">
-    <h2 className="font-bold mb-4">Price Distribution</h2>
-    <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={priceData}>
-        <XAxis dataKey="_id" />
-        <YAxis />
-        <Tooltip />
-        <Bar dataKey="count" fill="#7C3AED" />
-      </BarChart>
-    </ResponsiveContainer>
-  </div>
+  <h2 className="font-bold mb-4">Price Distribution</h2>
+
+  <ResponsiveContainer width="100%" height={350}>
+    <BarChart data={priceData}>
+      <CartesianGrid strokeDasharray="3 3" />
+
+      <XAxis
+        dataKey="productName"
+        angle={-45}
+        textAnchor="end"
+        interval={0}
+        height={90}
+      />
+
+      <YAxis />
+
+      <Tooltip
+        formatter={(value) => [`₹${value}`, "Price"]}
+      />
+
+      <Bar
+        dataKey="price"
+        fill="#7C3AED"
+        radius={[8, 8, 0, 0]}
+      />
+    </BarChart>
+  </ResponsiveContainer>
+</div>
 </div>
 
           {/* ✅ Upload History Table */}

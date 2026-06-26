@@ -1,4 +1,5 @@
 import express from "express";
+import protect from "../../middleware/authMiddleware.js";
 
 import {
   uploadOrders,
@@ -7,44 +8,17 @@ import {
   getOrdersByProduct,
   getOrdersByDate,
   getTopCustomers,
+  getAllOrders
 } from "./orderController.js";
 
 const router = express.Router();
 
-// Upload Orders CSV/Excel Data
-router.post(
-  "/upload",
-  uploadOrders
-);
-
-// KPI Cards
-router.get(
-  "/stats",
-  getOrderStats
-);
-
-// Pie Chart
-router.get(
-  "/status",
-  getOrdersByStatus
-);
-
-// Top Products Bar Chart
-router.get(
-  "/by-product",
-  getOrdersByProduct
-);
-
-// Orders Trend Line Chart
-router.get(
-  "/by-date",
-  getOrdersByDate
-);
-
-// Top Customers
-router.get(
-  "/top-customers",
-  getTopCustomers
-);
+router.post("/upload", protect, uploadOrders);
+router.get("/stats", protect, getOrderStats);
+router.get("/status", protect, getOrdersByStatus);
+router.get("/by-product", protect, getOrdersByProduct);
+router.get("/by-date", protect, getOrdersByDate);
+router.get("/top-customers", protect, getTopCustomers);
+router.get("/all-orders", protect, getAllOrders);
 
 export default router;

@@ -17,6 +17,10 @@ const ProductAnalysis = () => {
   const [categoryData, setCategoryData] = useState([]);
   const [loading, setLoading]           = useState(false);
 const [stats, setStats] = useState({});
+const [showAllProducts, setShowAllProducts] = useState(false);
+const [search, setSearch] = useState("");
+const [sortBy, setSortBy] = useState("soldUnits");
+const [allProducts, setAllProducts] = useState([]);
 
   // ✅ Fetch upload history for dropdown
 const fetchUploads = async () => {
@@ -70,6 +74,28 @@ const fetchCategories = async (uploadId) => {
   }
 };
 
+const fetchAllProducts = async () => {
+  try {
+    console.log("Calling fetchAllProducts...");
+
+    const endpoint = selectedUpload
+      ? `/products/all-products?uploadId=${selectedUpload}`
+      : "/products/all-products";
+
+    console.log(endpoint);
+    
+
+    const res = await axiosInstance.get(endpoint);
+console.log("Products received:", res.data.length);
+console.log(res.data);
+
+    setAllProducts(res.data);
+    setShowAllProducts(true);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const fetchDashboardStats = async (uploadId) => {
   try {
     const endpoint = uploadId
@@ -91,6 +117,11 @@ const fetchDashboardStats = async (uploadId) => {
   useEffect(() => {
     fetchUploads();
   }, []);
+  useEffect(() => {
+  if (showAllProducts) {
+    fetchAllProducts();
+  }
+}, [showAllProducts, selectedUpload]);
 
   // ✅ Re-fetch charts when upload selection changes
  useEffect(() => {
@@ -129,7 +160,30 @@ const fetchStats = async (uploadId) => {
     console.log(error);
   }
 };
+const filteredProducts = [...allProducts]
+  .filter((product) =>
+    product.productName
+      ?.toLowerCase()
+      .includes(search.toLowerCase())
+  )
+  .sort((a, b) => {
+    switch (sortBy) {
+      case "price":
+        return b.price - a.price;
 
+      case "rating":
+        return b.rating - a.rating;
+
+      case "stock":
+        return b.stock - a.stock;
+
+      case "soldUnits":
+        return b.soldUnits - a.soldUnits;
+
+      default:
+        return 0;
+    }
+  });
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-purple-100 p-8">
 
@@ -193,7 +247,22 @@ const fetchStats = async (uploadId) => {
 
         {/* Top Products Bar Chart */}
         <div className="bg-white p-6 rounded-3xl shadow-lg">
-          <h2 className="text-xl font-semibold mb-4">Top Selling Products</h2>
+         <div className="flex justify-between items-center mb-4">
+
+  <h2 className="text-xl font-semibold">
+    Top Selling Products
+  </h2>
+<p className="text-sm text-slate-500 mt-3">
+  Showing {productData.length} of {stats.totalProducts} Products
+</p>
+<button
+    onClick={() => setShowAllProducts(true)}
+    className="mt-6 bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 rounded-lg"
+>
+    View All Products
+</button>
+
+</div>
           {productData.length === 0 ? (
             <div className="h-64 flex items-center justify-center text-slate-400">
               No data for selected upload
@@ -233,6 +302,198 @@ const fetchStats = async (uploadId) => {
         </div>
 
       </div>
+     {showAllProducts && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+    <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-7xl h-[90vh] overflow-hidden">
+
+      {/* Header */}
+      <div className="flex justify-between items-center border-b px-8 py-5">
+
+        <div>
+          <h2 className="text-3xl font-bold">
+            📦 All Products
+          </h2>
+
+          <p className="text-gray-500">
+            {filteredProducts.length} Products
+          </p>
+        </div>
+
+   
+
+      </div>
+
+      {/* Search + Sort */}
+      <div className="flex justify-between items-center p-6 border-b">
+
+        <input
+          type="text"
+          placeholder="Search product..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="border rounded-lg px-4 py-2 w-80"
+        />
+
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="border rounded-lg px-4 py-2"
+        >
+          <option value="soldUnits">Top Selling</option>
+          <option value="rating">Highest Rating</option>
+          <option value="price">Highest Price</option>
+          <option value="stock">Highest Stock</option>
+        </select>
+
+      </div>
+
+      {/* Summary */}
+      <div className="grid grid-cols-4 gap-5 p-6">
+
+        <div className="bg-violet-50 rounded-xl p-4">
+          <p className="text-gray-500">Products</p>
+          <h2 className="text-3xl font-bold">
+            {filteredProducts.length}
+          </h2>
+        </div>
+
+        <div className="bg-blue-50 rounded-xl p-4">
+          <p className="text-gray-500">Average Price</p>
+          <h2 className="text-3xl font-bold">
+            ₹
+            {filteredProducts.length
+              ? Math.round(
+                  filteredProducts.reduce((a, b) => a + b.price, 0) /
+                    filteredProducts.length
+                )
+              : 0}
+          </h2>
+        </div>
+
+        <div className="bg-yellow-50 rounded-xl p-4">
+          <p className="text-gray-500">Average Rating</p>
+          <h2 className="text-3xl font-bold">
+            ⭐
+            {filteredProducts.length
+              ? (
+                  filteredProducts.reduce(
+                    (a, b) => a + b.rating,
+                    0
+                  ) / filteredProducts.length
+                ).toFixed(1)
+              : 0}
+          </h2>
+        </div>
+
+        <div className="bg-green-50 rounded-xl p-4">
+          <p className="text-gray-500">Total Stock</p>
+          <h2 className="text-3xl font-bold">
+            {filteredProducts.reduce((a, b) => a + b.stock, 0)}
+          </h2>
+        </div>
+
+      </div>
+
+      {/* Table */}
+      <div className="overflow-y-auto h-[48vh] px-6">
+
+        <table className="w-full border-collapse">
+
+          <thead className="sticky top-0 bg-violet-600 text-white">
+
+            <tr>
+
+              <th className="p-4 text-left">Product</th>
+              <th>Category</th>
+              <th>Brand</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Sold</th>
+              <th>Rating</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            {filteredProducts.map((product, index) => (
+
+              <tr
+                key={product._id}
+                className={`${
+                  index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                } hover:bg-violet-50`}
+              >
+
+                <td className="p-4 font-medium">
+                  {product.productName}
+                </td>
+
+                <td>{product.category}</td>
+
+                <td>{product.brand}</td>
+
+                <td>₹{product.price}</td>
+
+                <td>
+
+                  <span
+                    className={`px-3 py-1 rounded-full text-white text-sm
+
+                    ${
+                      product.stock > 100
+                        ? "bg-green-500"
+                        : product.stock > 20
+                        ? "bg-yellow-500"
+                        : "bg-red-500"
+                    }`}
+                  >
+                    {product.stock}
+                  </span>
+
+                </td>
+
+                <td>
+
+                  <span className="bg-violet-100 text-violet-700 px-3 py-1 rounded-full">
+                    {product.soldUnits}
+                  </span>
+
+                </td>
+
+                <td>⭐ {product.rating}</td>
+
+              </tr>
+
+            ))}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      {/* Footer */}
+      <div className="border-t flex justify-between items-center px-6 py-4">
+
+        <p className="text-gray-500">
+          Showing {filteredProducts.length} Products
+        </p>
+
+  <button
+    onClick={() => setShowAllProducts(false)}
+    className="bg-violet-600 text-white px-6 py-2 rounded-lg"
+>
+    Close
+</button>
+      </div>
+
+    </div>
+
+  </div>
+)}
     </div>
   );
 };

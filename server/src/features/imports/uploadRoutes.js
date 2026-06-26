@@ -1,4 +1,5 @@
 import express from "express";
+import protect from "../../middleware/authMiddleware.js"; // adjust path to your actual file
 import {
   uploadProducts,
   getUploads,
@@ -9,11 +10,10 @@ import { uploadOrders } from "../orders/orderController.js";
 
 const router = express.Router();
 
-router.get("/uploads", getUploads);
-router.get("/dashboard", getDashboardStats);
-router.get("/dashboard/:uploadId", getDashboardStats);
-router.post("/products", uploadProducts);
-router.post("/orders", uploadOrders);
-
+router.get("/uploads", protect, getUploads);
+router.get("/dashboard", protect, getDashboardStats);
+router.get("/dashboard/:uploadId", protect, getDashboardStats);
+router.post("/products", protect, uploadProducts);
+router.post("/orders", protect, uploadOrders);
 
 export default router;

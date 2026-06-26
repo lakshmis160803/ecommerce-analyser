@@ -206,24 +206,69 @@ const Login = () => {
       </div>
 
     
-      <div className="w-1/2 bg-violet-50 flex flex-col justify-center px-20">
-        <div className="bg-violet-100 text-violet-700 px-4 py-2 rounded-full w-fit mb-8">
-          ⚡ AI-Powered Analytics
+      {/* RIGHT */}
+      <div className="w-1/2 bg-[#0F0B1F] flex flex-col justify-center px-20 relative overflow-hidden">
+        {/* Ambient glow */}
+        <div className="absolute -top-32 -right-32 w-96 h-96 bg-violet-600 rounded-full blur-3xl opacity-30"></div>
+        <div className="absolute bottom-0 left-0 w-72 h-72 bg-fuchsia-500 rounded-full blur-3xl opacity-20"></div>
+
+        <div className="relative z-10">
+          <div className="bg-violet-500/10 border border-violet-400/30 text-violet-300 px-4 py-2 rounded-full w-fit mb-8 text-sm font-medium tracking-wide">
+            ⚡ AI-Powered Analytics
+          </div>
+
+          <h2 className="text-5xl font-bold leading-tight mb-6 text-white">
+            Turn your store data into
+            <span className="text-violet-400"> revenue insights</span>
+          </h2>
+
+          <p className="text-slate-400 text-lg mb-12 max-w-md">
+            Real-time dashboards, predictive analytics and AI recommendations in one place.
+          </p>
+
+          {/* Mini live dashboard mockup */}
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl">
+            <div className="flex justify-between items-center mb-6">
+              <span className="text-slate-300 text-sm font-medium">Revenue — This Month</span>
+              <span className="text-emerald-400 text-sm font-semibold bg-emerald-400/10 px-3 py-1 rounded-full">
+                ▲ 24.6%
+              </span>
+            </div>
+
+            <div className="text-4xl font-bold text-white mb-6">₹5,75,900</div>
+
+            {/* Animated bar chart */}
+            <div className="flex items-end gap-2 h-28">
+              {[40, 65, 50, 80, 60, 95, 75].map((h, i) => (
+                <div
+                  key={i}
+                  className="flex-1 bg-gradient-to-t from-violet-600 to-fuchsia-400 rounded-t-md animate-[grow_1.2s_ease-out_forwards]"
+                  style={{
+                    height: `${h}%`,
+                    animationDelay: `${i * 0.08}s`,
+                    transformOrigin: "bottom",
+                  }}
+                ></div>
+              ))}
+            </div>
+
+            <div className="flex justify-between mt-4 text-xs text-slate-500">
+              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            </div>
+          </div>
+
+          {/* Floating stat chips */}
+          <div className="flex gap-4 mt-6">
+            <div className="bg-white/5 border border-white/10 rounded-2xl px-5 py-3 flex-1">
+              <p className="text-slate-400 text-xs mb-1">Orders</p>
+              <p className="text-white text-xl font-bold">1,284</p>
+            </div>
+            <div className="bg-white/5 border border-white/10 rounded-2xl px-5 py-3 flex-1">
+              <p className="text-slate-400 text-xs mb-1">Avg. Order</p>
+              <p className="text-white text-xl font-bold">₹449</p>
+            </div>
+          </div>
         </div>
-
-        <h2 className="text-6xl font-bold leading-tight mb-6">
-          Turn your store data into
-          <span className="text-violet-600">
-            {" "}
-            revenue insights
-          </span>
-        </h2>
-
-        <p className="text-slate-600 text-xl mb-10">
-          Real-time dashboards,
-          predictive analytics and AI
-          recommendations in one place.
-        </p>
       </div>
     </div>
   );

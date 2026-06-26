@@ -31,6 +31,10 @@ const productSchema =
         type: Object,
         default: {},
       },
+      userId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+},
     },
     {
       timestamps: true,
