@@ -29,8 +29,7 @@ const OrderAnalytics = () => {
   const [productData, setProductData] = useState([]);
   const [dateData, setDateData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [uploads, setUploads] = useState([]);
-  const [selectedUpload, setSelectedUpload] = useState("");
+  const [dateRange, setDateRange] = useState("last7days");
   const [showAllOrders, setShowAllOrders] = useState(false);
   const [allOrders, setAllOrders] = useState([]);
   const [search, setSearch] = useState("");
@@ -39,19 +38,17 @@ const OrderAnalytics = () => {
     try {
       setLoading(true);
 
-      const query = selectedUpload
-        ? `?uploadId=${selectedUpload}`
-        : "";
+      const query = `?range=${dateRange}`;
 
-      const [
-        statsRes,
-        productRes,
-        dateRes,
-      ] = await Promise.all([
-        axiosInstance.get(`/orders/stats${query}`),
-        axiosInstance.get(`/orders/by-product${query}`),
-        axiosInstance.get(`/orders/by-date${query}`),
-      ]);
+     const [
+    statsRes,
+    productRes,
+    dateRes,
+] = await Promise.all([
+    axiosInstance.get(`/orders/stats${query}`),
+    axiosInstance.get(`/orders/by-product${query}`),
+    axiosInstance.get(`/orders/by-date${query}`),
+]);
 
       setStats(statsRes.data);
       setProductData(productRes.data);
@@ -68,10 +65,7 @@ const OrderAnalytics = () => {
 
   const fetchAllOrders = async () => {
   try {
-
-    const endpoint = selectedUpload
-      ? `/orders/all-orders?uploadId=${selectedUpload}`
-      : "/orders/all-orders";
+const endpoint = `/orders/all-orders?range=${dateRange}`;
 
     const res = await axiosInstance.get(endpoint);
 
@@ -143,10 +137,8 @@ const filteredOrders = [...allOrders]
   };
   useEffect(() => {
     fetchData();
-  }, [selectedUpload]);
-  useEffect(() => {
-    fetchUploads();
-  }, []);
+}, [dateRange]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-purple-100 p-8">
 
@@ -154,30 +146,55 @@ const filteredOrders = [...allOrders]
         Order Analytics
       </h1>
       <div className="mb-8 bg-white p-4 rounded-2xl shadow-sm">
-        <label className="block text-sm font-semibold mb-2">
-          Select Order Dataset
-        </label>
+       <div className="mb-8 bg-white p-5 rounded-2xl shadow-sm">
 
-        <select
-          value={selectedUpload}
-          onChange={(e) =>
-            setSelectedUpload(e.target.value)
-          }
-          className="border p-2 rounded-lg w-72"
-        >
-          <option value="">
-            All Order Uploads
-          </option>
+  <label className="block text-sm font-semibold mb-2">
+    Date Range
+  </label>
 
-          {uploads.map((upload) => (
-            <option
-              key={upload._id}
-              value={upload._id}
-            >
-              {upload.fileName}
-            </option>
-          ))}
-        </select>
+  <select
+    value={dateRange}
+    onChange={(e)=>setDateRange(e.target.value)}
+    className="border rounded-lg p-2 w-72"
+  >
+
+      <option value="today">Today</option>
+
+      <option value="yesterday">
+        Yesterday
+      </option>
+
+      <option value="last7days">
+        Last 7 Days
+      </option>
+
+      <option value="last30days">
+        Last 30 Days
+      </option>
+
+      <option value="thisMonth">
+        This Month
+      </option>
+
+      <option value="lastMonth">
+        Last Month
+      </option>
+
+      <option value="last3months">
+        Last 3 Months
+      </option>
+
+      <option value="thisYear">
+        This Year
+      </option>
+
+      <option value="all">
+        All Time
+      </option>
+
+  </select>
+
+</div>
       </div>
 
 
