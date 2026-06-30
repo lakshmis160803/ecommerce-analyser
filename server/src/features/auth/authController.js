@@ -1,4 +1,4 @@
-import User from "./User.js";
+import User from "../users/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -27,6 +27,7 @@ const user = await User.create({
   name,
   email,
   password: hashedPassword,
+  role:"viewer"
 });
 
     res.status(201).json({
@@ -36,6 +37,7 @@ const user = await User.create({
         id: user._id,
         name: user.name,
         email: user.email,
+        role:user.role
       },
     });
   } catch (error) {
@@ -81,25 +83,27 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    const accessToken = jwt.sign(
-      {
-        id: user._id,
-      },
-      process.env.JWT_ACCESS_SECRET,
-      {
-        expiresIn: "15m",
-      }
-    );
+   const accessToken = jwt.sign(
+  {
+    id: user._id,
+    role: user.role,
+  },
+  process.env.JWT_ACCESS_SECRET,
+  {
+    expiresIn: "15m",
+  }
+);
 
-    const refreshToken = jwt.sign(
-      {
-        id: user._id,
-      },
-      process.env.JWT_REFRESH_SECRET,
-      {
-        expiresIn: "7d",
-      }
-    );
+  const refreshToken = jwt.sign(
+  {
+    id: user._id,
+    role: user.role,
+  },
+  process.env.JWT_REFRESH_SECRET,
+  {
+    expiresIn: "7d",
+  }
+);
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
@@ -122,6 +126,7 @@ export const loginUser = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        role:user.role
       },
     });
   } catch (error) {

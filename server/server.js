@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import uploadRoutes from "./src/features/imports/uploadRoutes.js"
 import productRoutes from "./src/features/products/productRoutes.js"
 import orderRoutes from "./src/features/orders/orderRoutes.js";
+import userRoutes from "./src/features/users/userRoutes.js";
 dotenv.config();
 connectDB();
 const app = express();
@@ -36,7 +37,7 @@ app.use(
   productRoutes
 );
 app.use("/api/orders", orderRoutes);
-
+app.use("/api/users", userRoutes);
 app.get("/", (req, res) => {
   res.send("API Running");
 });

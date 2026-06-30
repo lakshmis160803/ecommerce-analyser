@@ -2,15 +2,74 @@ import Order from "./Order.js";
 import UploadHistory from "../imports/UploadHistory.js";
 import mongoose from "mongoose";
 
-const buildOrderFilter = (uploadId, userId) => {
-  const filter = { userId: new mongoose.Types.ObjectId(userId) };
+const getUploadMatch = async (range) => {
+  const filter = {
+  fileType: "order",
+};
 
-  if (uploadId && mongoose.Types.ObjectId.isValid(uploadId)) {
-    filter.uploadId = new mongoose.Types.ObjectId(uploadId);
+  const now = new Date();
+
+  switch (range) {
+    case "today":
+      filter.createdAt = {
+        $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+      };
+      break;
+
+    case "yesterday":
+      filter.createdAt = {
+        $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1),
+        $lt: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+      };
+      break;
+
+    case "last7days":
+      filter.createdAt = {
+        $gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
+      };
+      break;
+
+    case "last30days":
+      filter.createdAt = {
+        $gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
+      };
+      break;
+
+    case "thisMonth":
+      filter.createdAt = {
+        $gte: new Date(now.getFullYear(), now.getMonth(), 1),
+      };
+      break;
+
+    case "lastMonth":
+      filter.createdAt = {
+        $gte: new Date(now.getFullYear(), now.getMonth() - 1, 1),
+        $lt: new Date(now.getFullYear(), now.getMonth(), 1),
+      };
+      break;
+
+    case "last3months":
+      filter.createdAt = {
+        $gte: new Date(now.getFullYear(), now.getMonth() - 3, now.getDate()),
+      };
+      break;
+
+    case "thisYear":
+      filter.createdAt = {
+        $gte: new Date(now.getFullYear(), 0, 1),
+      };
+      break;
+
+    case "all":
+    default:
+      break;
   }
 
-  return filter;
+  const uploads = await UploadHistory.find(filter).select("_id");
+
+  return uploads.map((u) => u._id);
 };
+
 
 const excelSerialToDate = (serial) => {
   const utcDays = Math.floor(serial - 25569);
@@ -84,7 +143,21 @@ export const uploadOrders = async (req, res) => {
 
 export const getOrderStats = async (req, res) => {
   try {
-    const match = buildOrderFilter(req.query.uploadId, req.user.id);
+    console.log("================================");
+    console.log("Query:", req.query);
+
+    // Get upload IDs based on date range
+    const uploadIds = await getUploadMatch(
+      req.query.range,
+      req.user.id
+    );
+
+    console.log("Upload IDs:", uploadIds);
+const match = {
+  uploadId: { $in: uploadIds },
+};
+
+    console.log("Match:", match);
 
     const stats = await Order.aggregate([
       { $match: match },
@@ -92,9 +165,19 @@ export const getOrderStats = async (req, res) => {
         $group: {
           _id: null,
           totalOrders: { $sum: 1 },
-          totalRevenue: { $sum: { $multiply: ["$price", "$quantity"] } },
-          totalQuantity: { $sum: "$quantity" },
-          avgOrderValue: { $avg: { $multiply: ["$price", "$quantity"] } },
+          totalRevenue: {
+            $sum: {
+              $multiply: ["$price", "$quantity"],
+            },
+          },
+          totalQuantity: {
+            $sum: "$quantity",
+          },
+          avgOrderValue: {
+            $avg: {
+              $multiply: ["$price", "$quantity"],
+            },
+          },
         },
       },
     ]);
@@ -110,19 +193,10 @@ export const getOrderStats = async (req, res) => {
 
     const { _id, ...result } = stats[0];
 
-    const availableFields = {
-      price: await Order.exists({ userId: req.user.id, price: { $gt: 0 } }),
-      status: await Order.exists({ userId: req.user.id, status: { $ne: null } }),
-      productName: await Order.exists({ userId: req.user.id, productName: { $ne: null } }),
-      customerName: await Order.exists({ userId: req.user.id, customerName: { $ne: null } }),
-      region: await Order.exists({ userId: req.user.id, region: { $ne: null } }),
-    };
+    res.json(result);
 
-    res.json({
-      ...result,
-      availableFields,
-    });
   } catch (error) {
+    console.log(error);
     res.status(500).json({
       message: error.message,
     });
@@ -135,9 +209,13 @@ export const getOrderStats = async (req, res) => {
 
 export const getOrdersByStatus = async (req, res) => {
   try {
-    const match = buildOrderFilter(req.query.uploadId, req.user.id);
-
-    const data = await Order.aggregate([
+ const uploadIds = await getUploadMatch(
+  req.query.range
+);
+const match = {
+  uploadId: { $in: uploadIds },
+};
+ const data = await Order.aggregate([
       { $match: match },
       {
         $group: {
@@ -166,8 +244,12 @@ export const getOrdersByStatus = async (req, res) => {
 
 export const getOrdersByProduct = async (req, res) => {
   try {
-    const match = buildOrderFilter(req.query.uploadId, req.user.id);
-
+const uploadIds = await getUploadMatch(
+  req.query.range
+);
+const match = {
+  uploadId: { $in: uploadIds },
+};
     const stats = await Order.aggregate([
       { $match: match },
       {
@@ -196,7 +278,13 @@ export const getOrdersByProduct = async (req, res) => {
 
 export const getOrdersByDate = async (req, res) => {
   try {
-    const match = buildOrderFilter(req.query.uploadId, req.user.id);
+const uploadIds = await getUploadMatch(
+  req.query.range
+);
+
+const match = {
+  uploadId: { $in: uploadIds },
+};
 
     const data = await Order.aggregate([
       {
@@ -241,8 +329,13 @@ export const getOrdersByDate = async (req, res) => {
 
 export const getTopCustomers = async (req, res) => {
   try {
-    const match = buildOrderFilter(req.query.uploadId, req.user.id);
+const uploadIds = await getUploadMatch(
+  req.query.range
+);
 
+const match = {
+  uploadId: { $in: uploadIds },
+};
     const customers = await Order.aggregate([
       { $match: match },
       {
@@ -270,7 +363,13 @@ export const getTopCustomers = async (req, res) => {
 
 export const getAllOrders = async (req, res) => {
   try {
-    const match = buildOrderFilter(req.query.uploadId, req.user.id);
+const uploadIds = await getUploadMatch(
+  req.query.range
+);
+
+const match = {
+  uploadId: { $in: uploadIds },
+};
 
     const orders = await Order.find(match).sort({ orderDate: -1 });
 

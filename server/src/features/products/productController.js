@@ -1,22 +1,85 @@
 import Product from "../products/Product.js";
 import mongoose from "mongoose";
+import UploadHistory from "../imports/UploadHistory.js";
 
 // ✅ Reusable helper — builds filter from uploadId query param + always scopes by user
-const buildMatchFilter = (uploadId, userId) => {
-  const filter = { userId: new mongoose.Types.ObjectId(userId) };
+const getProductUploadIds = async (range) => {
+  const filter = {
+    fileType: "product",
+  };
 
-  if (uploadId && mongoose.Types.ObjectId.isValid(uploadId)) {
-    filter.uploadId = new mongoose.Types.ObjectId(uploadId);
+  const now = new Date();
+
+  switch (range) {
+    case "today":
+      filter.createdAt = {
+        $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+      };
+      break;
+
+    case "yesterday":
+      filter.createdAt = {
+        $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1),
+        $lt: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+      };
+      break;
+
+    case "last7days":
+      filter.createdAt = {
+        $gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
+      };
+      break;
+
+    case "last30days":
+      filter.createdAt = {
+        $gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
+      };
+      break;
+
+    case "thisMonth":
+      filter.createdAt = {
+        $gte: new Date(now.getFullYear(), now.getMonth(), 1),
+      };
+      break;
+
+    case "lastMonth":
+      filter.createdAt = {
+        $gte: new Date(now.getFullYear(), now.getMonth() - 1, 1),
+        $lt: new Date(now.getFullYear(), now.getMonth(), 1),
+      };
+      break;
+
+    case "last3months":
+      filter.createdAt = {
+        $gte: new Date(now.getFullYear(), now.getMonth() - 3, now.getDate()),
+      };
+      break;
+
+    case "thisYear":
+      filter.createdAt = {
+        $gte: new Date(now.getFullYear(), 0, 1),
+      };
+      break;
+
+    case "all":
+    default:
+      break;
   }
 
-  return filter;
-};
+  const uploads = await UploadHistory.find(filter).select("_id");
 
+  return uploads.map((u) => u._id);
+};
 // GET /api/products/top-products?uploadId=xxx
 export const getTopProducts = async (req, res) => {
   try {
-    const match = buildMatchFilter(req.query.uploadId, req.user.id);
+   const uploadIds = await getProductUploadIds(
+  req.query.range
+);
 
+const match = {
+  uploadId: { $in: uploadIds },
+};
     const products = await Product.find(match)
       .sort({ soldUnits: -1 })
       .limit(10);
@@ -30,8 +93,13 @@ export const getTopProducts = async (req, res) => {
 // GET /api/products/categories?uploadId=xxx
 export const getCategoryStats = async (req, res) => {
   try {
-    const match = buildMatchFilter(req.query.uploadId, req.user.id);
+  const uploadIds = await getProductUploadIds(
+  req.query.range
+);
 
+const match = {
+  uploadId: { $in: uploadIds },
+};
     const stats = await Product.aggregate([
       { $match: match },
       {
@@ -54,8 +122,13 @@ export const getCategoryStats = async (req, res) => {
 // GET /api/products/regions?uploadId=xxx
 export const getRegionRevenue = async (req, res) => {
   try {
-    const match = buildMatchFilter(req.query.uploadId, req.user.id);
+const uploadIds = await getProductUploadIds(
+  req.query.range
+);
 
+const match = {
+  uploadId: { $in: uploadIds },
+};
     const stats = await Product.aggregate([
       { $match: match },
       {
@@ -78,9 +151,15 @@ export const getRegionRevenue = async (req, res) => {
 // GET /api/products/dashboard/:uploadId
 export const getDashboardStats = async (req, res) => {
   try {
-    const uploadId = req.params.uploadId || req.query.uploadId;
 
-    const match = buildMatchFilter(uploadId, req.user.id);
+
+ const uploadIds = await getProductUploadIds(
+  req.query.range
+);
+
+const match = {
+  uploadId: { $in: uploadIds },
+};
 
     const stats = await Product.aggregate([
       { $match: match },
@@ -117,8 +196,13 @@ export const getDashboardStats = async (req, res) => {
 
 export const getRatingDistribution = async (req, res) => {
   try {
-    const match = buildMatchFilter(req.query.uploadId, req.user.id);
+   const uploadIds = await getProductUploadIds(
+  req.query.range
+);
 
+const match = {
+  uploadId: { $in: uploadIds },
+};
     const ratings = await Product.aggregate([
       { $match: match },
       {
@@ -139,8 +223,13 @@ export const getRatingDistribution = async (req, res) => {
 
 export const getCategoryDistribution = async (req, res) => {
   try {
-    const match = buildMatchFilter(req.query.uploadId, req.user.id);
+ const uploadIds = await getProductUploadIds(
+  req.query.range
+);
 
+const match = {
+  uploadId: { $in: uploadIds },
+};
     const data = await Product.aggregate([
       { $match: match },
       {
@@ -159,8 +248,13 @@ export const getCategoryDistribution = async (req, res) => {
 
 export const getPriceDistribution = async (req, res) => {
   try {
-    const match = buildMatchFilter(req.query.uploadId, req.user.id);
+  const uploadIds = await getProductUploadIds(
+  req.query.range
+);
 
+const match = {
+  uploadId: { $in: uploadIds },
+};
     const data = await Product.aggregate([
       { $match: match },
       {
@@ -194,7 +288,13 @@ export const createProduct = async (req, res) => {
 
 export const getAllProducts = async (req, res) => {
   try {
-    const match = buildMatchFilter(req.query.uploadId, req.user.id);
+   const uploadIds = await getProductUploadIds(
+  req.query.range
+);
+
+const match = {
+  uploadId: { $in: uploadIds },
+};
 
     const products = await Product.find(match).sort({ soldUnits: -1 });
 

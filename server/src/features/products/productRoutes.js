@@ -11,18 +11,19 @@ import {
   getPriceDistribution,
   getAllProducts
 } from "./productController.js";
+import authorize from "../../middleware/authorize.js";
 
 const router = express.Router();
 
 router.get("/dashboard/:uploadId", protect, getDashboardStats);
-router.get("/dashboard",           protect, getDashboardStats);
-router.get("/top-products",        protect, getTopProducts);
-router.get("/categories",          protect, getCategoryStats);
-router.get("/regions",             protect, getRegionRevenue);
+router.get("/dashboard", protect, authorize("viewer", "admin", "superadmin"), getDashboardStats);
+router.get("/top-products", protect, getTopProducts);
+router.get("/categories", protect, getCategoryStats);
+router.get("/regions", protect, getRegionRevenue);
 router.get("/rating-distribution", protect, getRatingDistribution);
 router.get("/category-distribution", protect, getCategoryDistribution);
-router.get("/price-distribution",  protect, getPriceDistribution);
-router.get("/all-products",        protect, getAllProducts);
-router.post("/",                   protect, createProduct);
+router.get("/price-distribution", protect, getPriceDistribution);
+router.get("/all-products", protect, getAllProducts);
+router.post("/", protect, createProduct);
 
 export default router;

@@ -42,7 +42,9 @@ export const uploadProducts = async (req, res) => {
 
 export const getUploads = async (req, res) => {
   try {
-    const uploads = await UploadHistory.find({ uploadedBy: req.user.id }).sort({ createdAt: -1 });
+const uploads = await UploadHistory.find({
+  fileType: "product",
+}).sort({ createdAt: -1 });
     res.status(200).json({ success: true, data: uploads });
   } catch (error) {
     console.error("getUploads error:", error);
@@ -55,7 +57,7 @@ export const getDashboardStats = async (req, res) => {
     const { uploadId } = req.params;
 
     const matchFilter = {
-      userId: new mongoose.Types.ObjectId(req.user.id),
+     
       ...(uploadId && mongoose.Types.ObjectId.isValid(uploadId)
         ? { uploadId: new mongoose.Types.ObjectId(uploadId) }
         : {}),
