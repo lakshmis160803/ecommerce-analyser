@@ -8,6 +8,8 @@ import uploadRoutes from "./src/features/imports/uploadRoutes.js"
 import productRoutes from "./src/features/products/productRoutes.js"
 import orderRoutes from "./src/features/orders/orderRoutes.js";
 import userRoutes from "./src/features/users/userRoutes.js";
+import customerRoutes from "./src/features/customers/customerRoutes.js"
+
 dotenv.config();
 connectDB();
 const app = express();
@@ -38,6 +40,7 @@ app.use(
 );
 app.use("/api/orders", orderRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/customers",customerRoutes)
 app.get("/", (req, res) => {
   res.send("API Running");
 });

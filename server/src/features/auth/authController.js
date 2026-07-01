@@ -93,7 +93,6 @@ export const loginUser = async (req, res) => {
     expiresIn: "15m",
   }
 );
-
   const refreshToken = jwt.sign(
   {
     id: user._id,
@@ -138,7 +137,6 @@ export const loginUser = async (req, res) => {
     });
   }
 };
-
 
 export const logoutUser = (req, res) => {
   res.cookie("accessToken", "", {

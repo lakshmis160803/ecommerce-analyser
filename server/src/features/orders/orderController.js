@@ -1,6 +1,7 @@
 import Order from "./Order.js";
 import UploadHistory from "../imports/UploadHistory.js";
 import mongoose from "mongoose";
+import Customer from "../customers/Customer.js";
 
 const getUploadMatch = async (range) => {
   const filter = {
@@ -120,6 +121,80 @@ export const uploadOrders = async (req, res) => {
     const result = await Order.insertMany(orders);
 
     console.log("Orders Saved:", result.length);
+    for (const order of result) {
+  const totalAmount =
+    Number(order.price || 0) *
+    Number(order.quantity || 0);
+
+  const existingCustomer = await Customer.findOne({
+    customerEmail: order.customerEmail,
+  });
+console.log({
+  customerName: order.customerName,
+  customerEmail: order.customerEmail,
+  quantity: order.quantity,
+  price: order.price,
+});
+  if (!existingCustomer) {
+    let customerType = "Occasional";
+
+    if (totalAmount >= 50000) {
+      customerType = "Premium";
+    } else if (totalAmount >= 20000) {
+      customerType = "Regular";
+    }
+
+  try {
+  const customer = await Customer.create({
+    customerId: order.customerId || order.customerEmail,
+    customerName: order.customerName,
+    customerEmail: order.customerEmail,
+    region: order.region,
+    totalOrders: 1,
+    totalSpent: totalAmount,
+    averageOrderValue: totalAmount,
+    totalQuantity: Number(order.quantity || 0),
+    firstOrderDate: order.orderDate,
+    lastOrderDate: order.orderDate,
+    customerType,
+    uploadId: upload._id,
+    uploadedBy: req.user.id,
+  });
+
+  console.log("Customer saved:", customer.customerName);
+} catch (err) {
+  console.error("Customer create failed:");
+  console.error(err);
+}
+  } else {
+    existingCustomer.totalOrders += 1;
+
+    existingCustomer.totalSpent += totalAmount;
+
+    existingCustomer.totalQuantity +=
+      Number(order.quantity || 0);
+
+    existingCustomer.averageOrderValue =
+      existingCustomer.totalSpent /
+      existingCustomer.totalOrders;
+
+    existingCustomer.lastOrderDate =
+      order.orderDate;
+
+    if (existingCustomer.totalSpent >= 50000) {
+      existingCustomer.customerType = "Premium";
+    } else if (
+      existingCustomer.totalSpent >= 20000
+    ) {
+      existingCustomer.customerType = "Regular";
+    } else {
+      existingCustomer.customerType =
+        "Occasional";
+    }
+
+    await existingCustomer.save();
+  }
+}
 
     res.status(200).json({
       success: true,

@@ -11,8 +11,7 @@ const COLORS = [
 ];
 
 const ProductAnalysis = () => {
-  const [uploads, setUploads]           = useState([]);
-  const [selectedUpload, setSelectedUpload] = useState("");
+ const [dateRange, setDateRange] = useState("today");
   const [productData, setProductData]   = useState([]);
   const [categoryData, setCategoryData] = useState([]);
   const [loading, setLoading]           = useState(false);
@@ -23,43 +22,21 @@ const [sortBy, setSortBy] = useState("soldUnits");
 const [allProducts, setAllProducts] = useState([]);
 
   // ✅ Fetch upload history for dropdown
-const fetchUploads = async () => {
-  try {
-    const res = await axiosInstance.get("/upload/uploads");
 
-    const result = Array.isArray(res.data)
-      ? res.data
-      : res.data.data;
-
-    setUploads(
-      result.filter(
-        (item) => item.fileType === "product"
-      )
-    );
-  } catch (error) {
-    console.log(error);
-  }
-};
   // ✅ Fetch top products filtered by uploadId
-const fetchTopProducts = async (uploadId) => {
-  try {
-    const endpoint = uploadId
-      ? `/products/top-products?uploadId=${uploadId}`
-      : "/products/top-products";
+const fetchTopProducts = async () => {
 
-    const res = await axiosInstance.get(endpoint);
+const endpoint =
+`/products/top-products?range=${dateRange}`;
 
-    setProductData(res.data);
-  } catch (error) {
-    console.log(error);
-  }
+const res = await axiosInstance.get(endpoint);
+
+setProductData(res.data);
+
 };
-
-const fetchCategories = async (uploadId) => {
+const fetchCategories = async () => {
   try {
-    const endpoint = uploadId
-      ? `/products/categories?uploadId=${uploadId}`
-      : "/products/categories";
+    const endpoint = `/products/categories?range=${dateRange}`;
 
     const res = await axiosInstance.get(endpoint);
 
@@ -78,9 +55,8 @@ const fetchAllProducts = async () => {
   try {
     console.log("Calling fetchAllProducts...");
 
-    const endpoint = selectedUpload
-      ? `/products/all-products?uploadId=${selectedUpload}`
-      : "/products/all-products";
+    const endpoint =
+`/products/all-products?range=${dateRange}`;
 
     console.log(endpoint);
     
@@ -96,11 +72,10 @@ console.log(res.data);
   }
 };
 
-const fetchDashboardStats = async (uploadId) => {
+const fetchDashboardStats = async () => {
   try {
-    const endpoint = uploadId
-      ? `/products/dashboard?uploadId=${uploadId}`
-      : "/products/dashboard";
+   const endpoint =
+`/products/dashboard?range=${dateRange}`;
 
     const res = await axiosInstance.get(endpoint);
 
@@ -114,14 +89,11 @@ const fetchDashboardStats = async (uploadId) => {
 
   // ✅ Fetch categories filtered by uploadId
 
-  useEffect(() => {
-    fetchUploads();
-  }, []);
-  useEffect(() => {
+useEffect(() => {
   if (showAllProducts) {
     fetchAllProducts();
   }
-}, [showAllProducts, selectedUpload]);
+}, [showAllProducts, dateRange]);
 
   // ✅ Re-fetch charts when upload selection changes
  useEffect(() => {
@@ -129,37 +101,23 @@ const fetchDashboardStats = async (uploadId) => {
     setLoading(true);
 
     await Promise.all([
-      fetchTopProducts(selectedUpload),
-      fetchCategories(selectedUpload),
-      fetchDashboardStats(selectedUpload),
+      fetchTopProducts(),
+      fetchCategories(),
+      fetchDashboardStats(),
     ]);
 
     setLoading(false);
   };
 
   load();
-}, [selectedUpload]);
+}, [dateRange]);
 
   const totalSoldUnits = productData.reduce((sum, item) => sum + item.soldUnits, 0);
   const topProduct = productData.length > 0 ? productData[0].productName : "N/A";
 
-  const selectedLabel = selectedUpload
-    ? uploads.find((u) => u._id === selectedUpload)?.fileName || "Selected Upload"
-    : "All Uploads";
+  
 
-const fetchStats = async (uploadId) => {
-  try {
-    const endpoint = uploadId
-      ? `/products/stats?uploadId=${uploadId}`
-      : "/products/stats";
 
-    const res = await axiosInstance.get(endpoint);
-
-    setStats(res.data);
-  } catch (error) {
-    console.log(error);
-  }
-};
 const filteredProducts = [...allProducts]
   .filter((product) =>
     product.productName
@@ -190,28 +148,29 @@ const filteredProducts = [...allProducts]
       <h1 className="text-4xl font-bold mb-6">Product Analysis</h1>
 
       {/* ✅ Dataset Selector */}
-      <div className="mb-8 bg-white p-4 rounded-2xl shadow-sm flex items-center gap-4 flex-wrap">
-        <div>
-          <label className="block text-sm font-semibold text-slate-500 mb-1">
-            Select Dataset
-          </label>
-          <select
-            value={selectedUpload}
-            onChange={(e) => setSelectedUpload(e.target.value)}
-            className="border p-2 rounded-lg w-72 text-sm"
-          >
-            <option value="">All Uploads</option>
-            {uploads.map((upload) => (
-              <option key={upload._id} value={upload._id}>
-                {upload.fileName} — {upload.totalRecords} records ({new Date(upload.createdAt).toLocaleDateString()})
-              </option>
-            ))}
-          </select>
-        </div>
-        <p className="text-sm text-slate-400 mt-4">
-          Showing: <span className="font-medium text-slate-600">{selectedLabel}</span>
-        </p>
-      </div>
+     <div className="mb-8 bg-white p-5 rounded-2xl shadow">
+
+  <label className="block mb-2 font-semibold">
+    Date Range
+  </label>
+
+  <select
+    value={dateRange}
+    onChange={(e) => setDateRange(e.target.value)}
+    className="border rounded-lg p-2 w-72"
+  >
+    <option value="today">Today</option>
+    <option value="yesterday">Yesterday</option>
+    <option value="last7days">Last 7 Days</option>
+    <option value="last30days">Last 30 Days</option>
+    <option value="thisMonth">This Month</option>
+    <option value="lastMonth">Last Month</option>
+    <option value="last3months">Last 3 Months</option>
+    <option value="thisYear">This Year</option>
+    <option value="all">All Time</option>
+  </select>
+
+</div>
 
       {/* Cards */}
      <div className="grid md:grid-cols-4 gap-6 mb-8">

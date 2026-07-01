@@ -1,12 +1,12 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import axiosInstance from "../api/axiosInstance";
 import { logout } from "../features/auth/store/authSlice";
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
+const { user } = useSelector((state) => state.auth);
   const handleLogout = async () => {
     try {
       await axiosInstance.post("/auth/logout");
@@ -126,6 +126,21 @@ const Sidebar = () => {
           >
             Reports
           </NavLink>
+          {user?.role === "superadmin" && (
+            <NavLink
+              to="/users"
+              className={({ isActive }) =>
+                `block p-3 rounded-lg ${
+                  isActive
+                    ? "bg-violet-600 text-white"
+                    : "hover:bg-violet-100"
+                }`
+              }
+            >
+              User Management
+            </NavLink>
+          )}
+ 
         </nav>
         {/* Logout Button */}
         <div className="mt-auto pt-6 ">
@@ -136,6 +151,7 @@ const Sidebar = () => {
             Logout
           </button>
         </div>
+
       </div>
 
 

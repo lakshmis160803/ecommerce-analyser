@@ -16,6 +16,9 @@ import {
   autoMapOrderFields,
   detectFileType,
 } from "../../utils/fieldMapping.js";
+
+import { useSelector } from "react-redux";
+
 const EMPTY_PRODUCT = {
   productId: "",
   productName: "",
@@ -30,6 +33,8 @@ const EMPTY_PRODUCT = {
 };
 
 const UploadData = () => {
+  const { user } = useSelector((state) => state.auth);
+  const isViewer = user?.role === "viewer";
   const [file, setFile] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [product, setProduct] = useState(EMPTY_PRODUCT);
@@ -225,12 +230,17 @@ console.log("DETECTED TYPE:", fileType);
             Product Data Management
           </h1>
 
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="bg-green-500 text-white px-6 py-3 rounded-xl mb-8"
-          >
-            Add Product Manually
-          </button>
+         <button
+  onClick={() => !isViewer && setShowForm(!showForm)}
+  disabled={isViewer}
+  className={`px-6 py-3 rounded-xl mb-8 text-white ${
+    isViewer
+      ? "bg-gray-400 cursor-not-allowed"
+      : "bg-green-500 hover:bg-green-600"
+  }`}
+>
+  Add Product Manually
+</button>
 
           <label className="border-2 border-dashed border-violet-300 rounded-3xl h-72 flex flex-col items-center justify-center cursor-pointer hover:bg-violet-50 transition">
             <div className="w-20 h-20 rounded-full bg-violet-600 flex items-center justify-center text-white text-4xl mb-4">
@@ -238,12 +248,13 @@ console.log("DETECTED TYPE:", fileType);
             </div>
             <h2 className="text-3xl font-bold">Upload CSV / Excel</h2>
             <p className="text-slate-500 mt-2">CSV, XLSX, XLS Supported</p>
-            <input
-              type="file"
-              className="hidden"
-              accept=".csv,.xlsx,.xls"
-              onChange={(e) => setFile(e.target.files[0])}
-            />
+           <input
+  type="file"
+  className="hidden"
+  accept=".csv,.xlsx,.xls"
+  disabled={isViewer}
+  onChange={(e) => setFile(e.target.files[0])}
+/>
           </label>
 
           {file && (
@@ -253,12 +264,17 @@ console.log("DETECTED TYPE:", fileType);
             </div>
           )}
 
-          <button
-            onClick={handleUpload}
-            className="w-full mt-6 py-4 rounded-xl text-white font-semibold bg-gradient-to-r from-violet-600 to-purple-500"
-          >
-            Upload Dataset
-          </button>
+        <button
+  onClick={handleUpload}
+  disabled={isViewer}
+  className={`w-full mt-6 py-4 rounded-xl text-white font-semibold ${
+    isViewer
+      ? "bg-gray-400 cursor-not-allowed"
+      : "bg-gradient-to-r from-violet-600 to-purple-500"
+  }`}
+>
+  Upload Dataset
+</button>
 
           {/* Manual Product Form */}
           {showForm && (
@@ -294,13 +310,23 @@ console.log("DETECTED TYPE:", fileType);
                   />
                 ))}
               </div>
-
-              <button
-                onClick={handleManualUpload}
-                className="mt-6 bg-green-600 text-white px-8 py-3 rounded-xl"
-              >
-                Save Product
-              </button>
+<button
+  onClick={handleManualUpload}
+  disabled={isViewer}
+  className={`mt-6 px-8 py-3 rounded-xl text-white ${
+    isViewer
+      ? "bg-gray-400 cursor-not-allowed"
+      : "bg-green-600 hover:bg-green-700"
+  }`}
+>
+  Save Product
+</button>
+{isViewer && (
+  <div className="mb-6 rounded-lg bg-yellow-100 border border-yellow-300 p-4 text-yellow-800">
+    You have Viewer access. Uploading and manually adding products are disabled.
+    Contact a Super Admin if you need Admin permissions.
+  </div>
+)}
             </div>
           )}
         </div>
