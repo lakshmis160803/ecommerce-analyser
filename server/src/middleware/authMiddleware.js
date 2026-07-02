@@ -23,10 +23,12 @@ const protect = (req, res, next) => {
 
     next();
   } catch (err) {
-    return res.status(401).json({
-      message: "Invalid token",
-    });
-  }
+  console.error(err);
+
+  return res.status(401).json({
+    message: err.message,
+  });
+}
 };
 
 export default protect;

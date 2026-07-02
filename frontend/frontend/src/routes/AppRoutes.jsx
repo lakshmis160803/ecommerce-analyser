@@ -9,6 +9,7 @@ import OrderAnalytics from "../features/analytics/pages/orderAnalytics";
 import DashboardLayout from "../layouts/DashboardLayout";
 import UserManagement from "../features/users/pages/UserManagement";
 import CustomerAnalysis from "../features/analytics/pages/CustomerAnalysis";
+import RegionalAnalysis from "../features/analytics/pages/regionalAnalysis";
 const AppRoutes = () => {
   return (
     <Routes>
@@ -56,6 +57,10 @@ const AppRoutes = () => {
       <Route
   path="/customers"
   element={<CustomerAnalysis />}
+/>
+<Route
+path="/regional"
+element={<RegionalAnalysis/>}
 />
       </Route>
     </Routes>
