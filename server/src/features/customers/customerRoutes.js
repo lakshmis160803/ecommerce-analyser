@@ -15,7 +15,7 @@ const router = express.Router();
 
 router.get(
   "/dashboard",
-  protect,
+ protect,   
   authorize("viewer", "admin", "superadmin"),
   getCustomerDashboard
 );

@@ -112,16 +112,14 @@ const CustomerAnalysis = () => {
                 </div>
 
                 <div className="bg-white rounded-xl shadow p-6">
-                    <p className="text-gray-500">
-                        Premium Customers
-                    </p>
+  <p className="text-gray-500">
+    Premium Customers
+  </p>
 
-                    <h2 className="text-3xl font-bold mt-2 text-orange-600">
-                        {segments.find(
-                            (s) => s.name === "High Value"
-                        )?.value || 0}
-                    </h2>
-                </div>
+  <h2 className="text-3xl font-bold mt-2 text-orange-600">
+    {dashboard.premiumCustomers ?? 0}
+  </h2>
+</div>
 
             </div>
             <div className="bg-white rounded-3xl shadow-lg p-6 mb-8">

@@ -3,6 +3,7 @@ import UploadHistory from "../imports/UploadHistory.js";
 import mongoose from "mongoose";
 import Customer from "../customers/Customer.js";
 
+
 const getUploadMatch = async (range) => {
   const filter = {
   fileType: "order",
@@ -119,16 +120,18 @@ export const uploadOrders = async (req, res) => {
     });
 
     const result = await Order.insertMany(orders);
-
+    console.log("Orders inserted:", result.length);
+console.log(result[0]);
     console.log("Orders Saved:", result.length);
+    console.log(result[0]);
     for (const order of result) {
   const totalAmount =
     Number(order.price || 0) *
     Number(order.quantity || 0);
 
-  const existingCustomer = await Customer.findOne({
-    customerEmail: order.customerEmail,
-  });
+ const existingCustomer = await Customer.findOne({
+  customerName: order.customerName,
+});
 console.log({
   customerName: order.customerName,
   customerEmail: order.customerEmail,
@@ -145,24 +148,27 @@ console.log({
     }
 
   try {
-  const customer = await Customer.create({
-    customerId: order.customerId || order.customerEmail,
-    customerName: order.customerName,
-    customerEmail: order.customerEmail,
-    region: order.region,
-    totalOrders: 1,
-    totalSpent: totalAmount,
-    averageOrderValue: totalAmount,
-    totalQuantity: Number(order.quantity || 0),
-    firstOrderDate: order.orderDate,
-    lastOrderDate: order.orderDate,
-    customerType,
-    uploadId: upload._id,
-    uploadedBy: req.user.id,
-  });
+  console.log("Processing:", order.customerName);
 
-  console.log("Customer saved:", customer.customerName);
-} catch (err) {
+const customer = await Customer.create({
+  customerId: `CUST-${order.customerName}`,
+  customerName: order.customerName,
+  customerEmail: "",
+  region: order.region,
+  totalOrders: 1,
+  totalSpent: totalAmount,
+  averageOrderValue: totalAmount,
+  totalQuantity: Number(order.quantity),
+  firstOrderDate: order.orderDate,
+  lastOrderDate: order.orderDate,
+  customerType,
+  uploadId: upload._id,
+  uploadedBy: req.user.id,
+});
+
+console.log("Saved:", customer);
+}
+ catch (err) {
   console.error("Customer create failed:");
   console.error(err);
 }

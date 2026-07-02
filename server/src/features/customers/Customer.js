@@ -4,7 +4,6 @@ const customerSchema = new mongoose.Schema(
   {
     customerId: {
       type: String,
-      required: true,
       unique: true,
     },
 
@@ -15,17 +14,21 @@ const customerSchema = new mongoose.Schema(
 
     customerEmail: {
       type: String,
-      required: true,
+      default: "",
     },
 
-    phone: String,
+    phone: {
+      type: String,
+      default: "",
+    },
 
-    region: String,
+    region: {
+      type: String,
+      default: "Unknown",
+    },
 
     city: String,
-
     state: String,
-
     country: String,
 
     totalOrders: {
@@ -48,17 +51,13 @@ const customerSchema = new mongoose.Schema(
       default: 0,
     },
 
-    lastOrderDate: Date,
-
     firstOrderDate: Date,
+
+    lastOrderDate: Date,
 
     customerType: {
       type: String,
-      enum: [
-        "Premium",
-        "Regular",
-        "Occasional",
-      ],
+      enum: ["Premium", "Regular", "Occasional"],
       default: "Occasional",
     },
 
@@ -77,7 +76,4 @@ const customerSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model(
-  "Customer",
-  customerSchema
-);
+export default mongoose.model("Customer", customerSchema);
