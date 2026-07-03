@@ -13,7 +13,18 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
+import {
+  FaGlobeAsia,
+  FaRupeeSign,
+} from "react-icons/fa";
 
+import {
+  MdLocationOn,
+} from "react-icons/md";
+
+import {
+  BsCartCheckFill,
+} from "react-icons/bs";
 const COLORS = [
   "#7c3aed",
   "#22c55e",
@@ -124,33 +135,69 @@ const RegionalAnalysis = () => {
        {/* KPI Cards */}
 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
 
-  <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl shadow-lg p-6">
-    <p className="text-sm opacity-80">Total Regions</p>
+<div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl shadow-lg p-6 flex justify-between items-center">
+
+  <div>
+    <p className="text-sm opacity-80">
+      Total Regions
+    </p>
+
     <h2 className="text-3xl font-bold mt-2">
       {dashboard.totalRegions}
     </h2>
   </div>
 
-  <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl shadow-lg p-6">
-    <p className="text-sm opacity-80">Total Revenue</p>
+  <FaGlobeAsia size={42} className="opacity-80" />
+
+</div>
+
+ <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl shadow-lg p-6 flex justify-between items-center">
+
+  <div>
+    <p className="text-sm opacity-80">
+      Total Revenue
+    </p>
+
     <h2 className="text-3xl font-bold mt-2">
       ₹ {dashboard.totalRevenue?.toLocaleString()}
     </h2>
   </div>
 
-  <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl shadow-lg p-6">
-    <p className="text-sm opacity-80">Highest Revenue Region</p>
+  <FaRupeeSign size={42} className="opacity-80" />
+
+</div>
+
+ <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl shadow-lg p-6 flex justify-between items-center">
+
+  <div>
+    <p className="text-sm opacity-80">
+      Highest Revenue Region
+    </p>
+
     <h2 className="text-2xl font-bold mt-2">
       {dashboard.highestRevenueRegion}
     </h2>
   </div>
 
-  <div className="bg-gradient-to-r from-sky-500 to-blue-600 text-white rounded-xl shadow-lg p-6">
-    <p className="text-sm opacity-80">Highest Orders Region</p>
+  <MdLocationOn size={42} className="opacity-80" />
+
+</div>
+
+ <div className="bg-gradient-to-r from-sky-500 to-blue-600 text-white rounded-xl shadow-lg p-6 flex justify-between items-center">
+
+  <div>
+    <p className="text-sm opacity-80">
+      Highest Orders Region
+    </p>
+
     <h2 className="text-2xl font-bold mt-2">
       {dashboard.highestOrdersRegion}
     </h2>
   </div>
+
+  <BsCartCheckFill size={42} className="opacity-80" />
+
+</div>
 
 </div>
       </div>
@@ -165,17 +212,41 @@ const RegionalAnalysis = () => {
   <h2 className="text-xl font-semibold mb-4">
     Revenue by Region
   </h2>
+<ResponsiveContainer width="100%" height={350}>
+  <BarChart
+    data={revenue.filter((item) => item._id)}
+    margin={{
+      top: 20,
+      right: 30,
+      left: 50,
+      bottom: 20,
+    }}
+  >
+    <CartesianGrid strokeDasharray="3 3" />
 
-  <ResponsiveContainer width="100%" height={350}>
-    <BarChart data={revenue}>
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="_id" />
-      <YAxis />
-      <Tooltip />
-      <Legend />
-      <Bar dataKey="revenue" fill="#7c3aed" radius={[8, 8, 0, 0]} />
-    </BarChart>
-  </ResponsiveContainer>
+    <XAxis dataKey="_id" />
+
+    <YAxis
+      width={80}
+      tickFormatter={(value) => value.toLocaleString()}
+    />
+
+    <Tooltip
+      formatter={(value) => [
+        `₹${Number(value).toLocaleString()}`,
+        "Revenue",
+      ]}
+    />
+
+    <Legend />
+
+    <Bar
+      dataKey="revenue"
+      fill="#7c3aed"
+      radius={[8, 8, 0, 0]}
+    />
+  </BarChart>
+</ResponsiveContainer>
 </div>
       </div>
 

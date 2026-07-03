@@ -4,11 +4,14 @@ import mongoose from "mongoose";
 import Customer from "../customers/Customer.js";
 
 
-const getUploadMatch = async (range) => {
-  const filter = {
+const getUploadMatch = async (range,userId) => {
+const filter = {
   fileType: "order",
 };
 
+if (userId) {
+  filter.uploadedBy = userId;
+}
   const now = new Date();
 
   switch (range) {
@@ -290,8 +293,9 @@ const match = {
 
 export const getOrdersByStatus = async (req, res) => {
   try {
- const uploadIds = await getUploadMatch(
-  req.query.range
+const uploadIds = await getUploadMatch(
+  req.query.range,
+  req.user.id
 );
 const match = {
   uploadId: { $in: uploadIds },
@@ -326,7 +330,8 @@ const match = {
 export const getOrdersByProduct = async (req, res) => {
   try {
 const uploadIds = await getUploadMatch(
-  req.query.range
+  req.query.range,
+  req.user.id
 );
 const match = {
   uploadId: { $in: uploadIds },
@@ -360,7 +365,8 @@ const match = {
 export const getOrdersByDate = async (req, res) => {
   try {
 const uploadIds = await getUploadMatch(
-  req.query.range
+  req.query.range,
+  req.user.id
 );
 
 const match = {
@@ -411,7 +417,8 @@ const match = {
 export const getTopCustomers = async (req, res) => {
   try {
 const uploadIds = await getUploadMatch(
-  req.query.range
+  req.query.range,
+  req.user.id
 );
 
 const match = {
@@ -445,9 +452,9 @@ const match = {
 export const getAllOrders = async (req, res) => {
   try {
 const uploadIds = await getUploadMatch(
-  req.query.range
+  req.query.range,
+  req.user.id
 );
-
 const match = {
   uploadId: { $in: uploadIds },
 };

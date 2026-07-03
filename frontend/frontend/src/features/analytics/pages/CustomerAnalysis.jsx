@@ -250,7 +250,9 @@ const CustomerAnalysis = () => {
       </div>
 
       <span className="text-gray-500 text-sm">
-        {segments.reduce((sum, item) => sum + item.value, 0)} Customers
+        {Array.isArray(segments)
+  ? segments.reduce((sum, item) => sum + item.value, 0)
+  : 0} Customers
       </span>
 
     </div>
@@ -269,7 +271,8 @@ const CustomerAnalysis = () => {
           innerRadius={55}
           label
         >
-          {segments.map((entry, index) => (
+         {Array.isArray(segments) &&
+  segments.map((entry, index) => (
             <Cell
               key={index}
               fill={COLORS[index % COLORS.length]}
@@ -291,7 +294,8 @@ const CustomerAnalysis = () => {
 
     <div className="grid grid-cols-3 gap-4 mt-6">
 
-      {segments.map((item, index) => (
+    {Array.isArray(segments) &&
+  segments.map((item, index) => (
 
         <div
           key={index}

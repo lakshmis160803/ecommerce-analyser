@@ -23,7 +23,7 @@ const { user } = useSelector((state) => state.auth);
   };
 
   return (
-    <aside className="w-72 bg-white shadow-lg p-6 min-h-screen flex flex-col">
+    <aside className="fixed top-0 left-0 h-screen w-72 bg-white shadow-lg p-6 flex flex-col z-50">
 
       <div>
         <h2 className="text-2xl font-bold text-violet-600 mb-8">

@@ -1,13 +1,19 @@
 import Order from "../orders/Order.js";
 import Customer from "./Customer.js";
 import UploadHistory from "../imports/UploadHistory.js";
+import mongoose from "mongoose";
+
 // -----------------------------
 // Helper
 // -----------------------------
-const getUploadIds = async (range) => {
+const getUploadIds = async (range, userId, fileType = "order") => {
   const filter = {
-    fileType: "order",
+    fileType,
   };
+
+  if (userId) {
+    filter.uploadedBy = userId;
+  }
 
   const now = new Date();
 
@@ -70,7 +76,15 @@ const getUploadIds = async (range) => {
 // ===============================
 export const getCustomerDashboard = async (req, res) => {
   try {
-    const customers = await Customer.find();
+  const uploadIds = await getUploadIds(
+  req.query.range,
+  req.user.id
+);
+
+const customers = await Customer.find({
+  uploadId: { $in: uploadIds },
+  uploadedBy: req.user.id,
+});
 
     const totalCustomers = customers.length;
 
@@ -108,7 +122,15 @@ export const getCustomerDashboard = async (req, res) => {
 // ===============================
 export const getTopCustomers = async (req, res) => {
   try {
-    const customers = await Customer.find()
+   const uploadIds = await getUploadIds(
+  req.query.range,
+  req.user.id
+);
+
+const customers = await Customer.find({
+  uploadId: { $in: uploadIds },
+  uploadedBy: req.user.id,
+})
       .sort({
         totalSpent: -1,
       })
@@ -129,24 +151,38 @@ export const getTopCustomers = async (req, res) => {
   }
 };
 
-// ===============================
-// Customer Segments
-// ===============================
-
 
 // ===============================
 // Customer Growth
 // ===============================
+
+
 export const getCustomerGrowth = async (req, res) => {
   try {
+    const uploadIds = await getUploadIds(
+      req.query.range,
+      req.user.id
+    );
 
     const data = await Customer.aggregate([
       {
+        $match: {
+          uploadId: { $in: uploadIds },
+          uploadedBy: new mongoose.Types.ObjectId(req.user.id),
+          firstOrderDate: {
+            $exists: true,
+            $ne: null,
+          },
+        },
+      },
+      {
         $group: {
           _id: {
-            $dateToString: {
-              format: "%b %Y",
-              date: "$firstOrderDate",
+            year: {
+              $year: "$firstOrderDate",
+            },
+            month: {
+              $month: "$firstOrderDate",
             },
           },
           totalCustomers: {
@@ -155,21 +191,51 @@ export const getCustomerGrowth = async (req, res) => {
         },
       },
       {
-        $project: {
-          month: "$_id",
-          totalCustomers: 1,
+        $sort: {
+          "_id.year": 1,
+          "_id.month": 1,
         },
       },
       {
-        $sort: {
-          month: 1,
+        $project: {
+          _id: 0,
+          month: {
+            $concat: [
+              {
+                $switch: {
+                  branches: [
+                    { case: { $eq: ["$_id.month", 1] }, then: "Jan" },
+                    { case: { $eq: ["$_id.month", 2] }, then: "Feb" },
+                    { case: { $eq: ["$_id.month", 3] }, then: "Mar" },
+                    { case: { $eq: ["$_id.month", 4] }, then: "Apr" },
+                    { case: { $eq: ["$_id.month", 5] }, then: "May" },
+                    { case: { $eq: ["$_id.month", 6] }, then: "Jun" },
+                    { case: { $eq: ["$_id.month", 7] }, then: "Jul" },
+                    { case: { $eq: ["$_id.month", 8] }, then: "Aug" },
+                    { case: { $eq: ["$_id.month", 9] }, then: "Sep" },
+                    { case: { $eq: ["$_id.month", 10] }, then: "Oct" },
+                    { case: { $eq: ["$_id.month", 11] }, then: "Nov" },
+                    { case: { $eq: ["$_id.month", 12] }, then: "Dec" },
+                  ],
+                  default: "",
+                },
+              },
+              " ",
+              {
+                $toString: "$_id.year",
+              },
+            ],
+          },
+          totalCustomers: 1,
         },
       },
     ]);
 
-    res.json(data);
+    console.log("Customer Growth:", data);
 
+    res.status(200).json(data);
   } catch (err) {
+    console.error(err);
     res.status(500).json({
       message: err.message,
     });
@@ -178,7 +244,15 @@ export const getCustomerGrowth = async (req, res) => {
 export const getAllCustomers = async (req, res) => {
   try {
 
-    const customers = await Customer.find().sort({
+   const uploadIds = await getUploadIds(
+  req.query.range,
+  req.user.id
+);
+
+const customers = await Customer.find({
+  uploadId: { $in: uploadIds },
+  uploadedBy: req.user.id,
+}).sort({
       totalSpent: -1,
     });
 
@@ -192,8 +266,19 @@ export const getAllCustomers = async (req, res) => {
 };
 export const getCustomersByRegion = async (req, res) => {
   try {
+const uploadIds = await getUploadIds(
+  req.query.range,
+  req.user.id
+);
 
+const match = {
+  uploadId: { $in: uploadIds },
+  uploadedBy: req.user.id,
+};
     const data = await Customer.aggregate([
+  {
+    $match: match,
+  },
       {
         $group: {
           _id: "$region",
@@ -217,15 +302,26 @@ export const getCustomersByRegion = async (req, res) => {
     });
   }
 };
+
+
 export const getCustomerSegments = async (req, res) => {
   try {
+    const uploadIds = await getUploadIds(
+      req.query.range,
+      req.user.id
+    );
+
+    const match = {
+      uploadId: { $in: uploadIds },
+      uploadedBy: new mongoose.Types.ObjectId(req.user.id),
+    };
+
     const data = await Customer.aggregate([
+      { $match: match },
       {
         $group: {
           _id: "$customerType",
-          value: {
-            $sum: 1,
-          },
+          value: { $sum: 1 },
         },
       },
       {
@@ -237,11 +333,11 @@ export const getCustomerSegments = async (req, res) => {
       },
     ]);
 
-    res.json(data);
+    console.log(data);
 
+    res.json(data);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    console.log(err);
+    res.status(500).json({ message: err.message });
   }
 };

@@ -1,7 +1,15 @@
+import mongoose from "mongoose";
 import Order from "../orders/Order.js";
 export const getRegionalDashboard = async (req, res) => {
   try {
-    const regions = await Order.aggregate([
+   const match = {
+  userId: new mongoose.Types.ObjectId(req.user.id),
+};
+
+const regions = await Order.aggregate([
+  {
+    $match: match,
+  },
       {
         $group: {
           _id: "$region",
@@ -48,8 +56,14 @@ export const getRegionalDashboard = async (req, res) => {
 };
 export const getRevenueByRegion = async (req, res) => {
   try {
+const match = {
+  userId: new mongoose.Types.ObjectId(req.user.id),
+};
 
-    const data = await Order.aggregate([
+const data = await Order.aggregate([
+  {
+    $match: match,
+  },
       {
         $group: {
           _id: "$region",
@@ -80,7 +94,14 @@ export const getRevenueByRegion = async (req, res) => {
 export const getOrdersByRegion = async (req, res) => {
   try {
 
-    const data = await Order.aggregate([
+  const match = {
+  userId: new mongoose.Types.ObjectId(req.user.id),
+};
+
+const data = await Order.aggregate([
+  {
+    $match: match,
+  },
       {
         $group: {
           _id: "$region",
@@ -109,7 +130,14 @@ export const getOrdersByRegion = async (req, res) => {
 export const getQuantityByRegion = async (req, res) => {
   try {
 
-    const data = await Order.aggregate([
+const match = {
+  userId: new mongoose.Types.ObjectId(req.user.id),
+};
+
+const data = await Order.aggregate([
+  {
+    $match: match,
+  },
       {
         $group: {
           _id: "$region",
@@ -137,8 +165,14 @@ export const getQuantityByRegion = async (req, res) => {
 };
 export const getRegionalTable = async (req, res) => {
   try {
+const match = {
+  userId: new mongoose.Types.ObjectId(req.user.id),
+};
 
-    const data = await Order.aggregate([
+const data = await Order.aggregate([
+  {
+    $match: match,
+  },
       {
         $group: {
           _id: "$region",

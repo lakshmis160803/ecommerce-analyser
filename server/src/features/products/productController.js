@@ -3,10 +3,15 @@ import mongoose from "mongoose";
 import UploadHistory from "../imports/UploadHistory.js";
 
 // ✅ Reusable helper — builds filter from uploadId query param + always scopes by user
-const getProductUploadIds = async (range) => {
-  const filter = {
-    fileType: "product",
-  };
+const getProductUploadIds = async (range,userId) => {
+const filter = {
+  fileType: "product",
+};
+
+if (userId) {
+  filter.uploadedBy = userId;
+
+}
 
   const now = new Date();
 
@@ -74,11 +79,13 @@ const getProductUploadIds = async (range) => {
 export const getTopProducts = async (req, res) => {
   try {
    const uploadIds = await getProductUploadIds(
-  req.query.range
+  req.query.range,
+  req.user.id
 );
 
 const match = {
   uploadId: { $in: uploadIds },
+  userId: new mongoose.Types.ObjectId(req.user.id),
 };
     const products = await Product.find(match)
       .sort({ soldUnits: -1 })
@@ -94,11 +101,13 @@ const match = {
 export const getCategoryStats = async (req, res) => {
   try {
   const uploadIds = await getProductUploadIds(
-  req.query.range
+  req.query.range,
+  req.user.id
 );
 
 const match = {
   uploadId: { $in: uploadIds },
+  userId: new mongoose.Types.ObjectId(req.user.id),
 };
     const stats = await Product.aggregate([
       { $match: match },
@@ -123,11 +132,13 @@ const match = {
 export const getRegionRevenue = async (req, res) => {
   try {
 const uploadIds = await getProductUploadIds(
-  req.query.range
+  req.query.range,
+  req.user.id
 );
 
 const match = {
   uploadId: { $in: uploadIds },
+  userId: new mongoose.Types.ObjectId(req.user.id),
 };
     const stats = await Product.aggregate([
       { $match: match },
@@ -154,11 +165,13 @@ export const getDashboardStats = async (req, res) => {
 
 
  const uploadIds = await getProductUploadIds(
-  req.query.range
+  req.query.range,
+  req.user.id
 );
 
 const match = {
   uploadId: { $in: uploadIds },
+  userId: new mongoose.Types.ObjectId(req.user.id),
 };
 
     const stats = await Product.aggregate([
@@ -197,11 +210,13 @@ const match = {
 export const getRatingDistribution = async (req, res) => {
   try {
    const uploadIds = await getProductUploadIds(
-  req.query.range
+  req.query.range,
+  req.user.id
 );
 
 const match = {
   uploadId: { $in: uploadIds },
+  userId: new mongoose.Types.ObjectId(req.user.id),
 };
     const ratings = await Product.aggregate([
       { $match: match },
@@ -224,11 +239,13 @@ const match = {
 export const getCategoryDistribution = async (req, res) => {
   try {
  const uploadIds = await getProductUploadIds(
-  req.query.range
+  req.query.range,
+  req.user.id
 );
 
 const match = {
   uploadId: { $in: uploadIds },
+  userId: new mongoose.Types.ObjectId(req.user.id),
 };
     const data = await Product.aggregate([
       { $match: match },
@@ -249,11 +266,13 @@ const match = {
 export const getPriceDistribution = async (req, res) => {
   try {
   const uploadIds = await getProductUploadIds(
-  req.query.range
+  req.query.range,
+  req.user.id
 );
 
 const match = {
   uploadId: { $in: uploadIds },
+  userId: new mongoose.Types.ObjectId(req.user.id),
 };
     const data = await Product.aggregate([
       { $match: match },
@@ -289,11 +308,13 @@ export const createProduct = async (req, res) => {
 export const getAllProducts = async (req, res) => {
   try {
    const uploadIds = await getProductUploadIds(
-  req.query.range
+  req.query.range,
+  req.user.id
 );
 
 const match = {
   uploadId: { $in: uploadIds },
+  userId: new mongoose.Types.ObjectId(req.user.id),
 };
 
     const products = await Product.find(match).sort({ soldUnits: -1 });

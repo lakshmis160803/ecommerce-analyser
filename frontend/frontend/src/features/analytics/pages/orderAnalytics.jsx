@@ -337,37 +337,52 @@ const filteredOrders = [...allOrders]
                 Order Status
               </h2>
 
-              <ResponsiveContainer
-                width="100%"
-                height={350}
-              >
-                <PieChart>
-                  <Pie
-                    data={statusData}
-                    dataKey="value"
-                    nameKey="name"
-                    outerRadius={120}
-                    label
-                  >
-                    {statusData.map(
-                      (entry, index) => (
-                        <Cell
-                          key={index}
-                          fill={
-                            COLORS[
-                            index %
-                            COLORS.length
-                            ]
-                          }
-                        />
-                      )
-                    )}
-                  </Pie>
+             <ResponsiveContainer width="100%" height={350}>
+  <LineChart
+    data={dateData}
+    margin={{
+      top: 20,
+      right: 20,
+      left: 40,
+      bottom: 20,
+    }}
+  >
+    <CartesianGrid strokeDasharray="3 3" />
 
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
+    <XAxis
+      dataKey="month"
+      tick={{ fontSize: 12 }}
+    />
+
+    <YAxis
+      width={75}
+      tick={{ fontSize: 12 }}
+      tickFormatter={(value) =>
+        hasRevenue
+          ? `₹${(value / 100000).toFixed(1)}L`
+          : value
+      }
+    />
+
+    <Tooltip
+      formatter={(value) => [
+        hasRevenue
+          ? `₹${Number(value).toLocaleString("en-IN")}`
+          : value,
+        hasRevenue ? "Revenue" : "Orders",
+      ]}
+    />
+
+    <Line
+      type="monotone"
+      dataKey={hasRevenue ? "revenue" : "orders"}
+      stroke="#7C3AED"
+      strokeWidth={3}
+      dot={{ r: 4 }}
+      activeDot={{ r: 6 }}
+    />
+  </LineChart>
+</ResponsiveContainer>
             </div>
           )}
         </div>

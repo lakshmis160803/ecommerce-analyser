@@ -4,15 +4,13 @@ import Sidebar from "./sidebarLayout";
 
 const DashboardLayout = () => {
   return (
-    <div className="flex bg-slate-100 min-h-screen">
+  <div className="bg-gray-100 min-h-screen">
+  <Sidebar />
 
-      <Sidebar />
-
-      <main className="flex-1 overflow-y-auto">
-        <Outlet />
-      </main>
-
-    </div>
+  <main className="ml-72 p-6">
+    <Outlet />
+  </main>
+</div>
   );
 };
 
