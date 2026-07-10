@@ -71,19 +71,19 @@ useEffect(() => {
 
 const exportCSV = () => {
   window.open(
-    `http://localhost:5000/api/reports/export/csv?uploadId=${selectedUpload}`
+    `https://ecommerceanalyser.duckdns.org/api/reports/export/csv?uploadId=${selectedUpload}`
   );
 };
 
 const exportExcel = () => {
   window.open(
-    `http://localhost:5000/api/reports/export/excel?uploadId=${selectedUpload}`
+    `https://ecommerceanalyser.duckdns.org/api/reports/export/excel?uploadId=${selectedUpload}`
   );
 };
 
   const downloadInsights = () => {
   window.open(
-    `http://localhost:5000/api/reports/insights?uploadId=${selectedUpload}`
+    `https://ecommerceanalyser.duckdns.org/api/reports/insights?uploadId=${selectedUpload}`
   );
 };
 
