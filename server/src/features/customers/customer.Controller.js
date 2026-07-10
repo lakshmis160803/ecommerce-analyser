@@ -3,6 +3,53 @@ import Customer from "./Customer.js";
 import UploadHistory from "../imports/UploadHistory.js";
 import mongoose from "mongoose";
 
+const getUploadIds = async (range, userId) => {
+  const filter = {
+    uploadedBy: userId,
+  };
+
+  // Optional date range filtering
+  if (range && range !== "all") {
+    const now = new Date();
+    let from = new Date();
+
+    switch (range) {
+      case "7days":
+      case "last7days":
+        from.setDate(now.getDate() - 7);
+        break;
+
+      case "30days":
+      case "last30days":
+        from.setDate(now.getDate() - 30);
+        break;
+
+      case "90days":
+      case "last90days":
+        from.setDate(now.getDate() - 90);
+        break;
+
+      case "365days":
+      case "lastyear":
+        from.setFullYear(now.getFullYear() - 1);
+        break;
+
+      default:
+        from = null;
+    }
+
+    if (from) {
+      filter.createdAt = {
+        $gte: from,
+      };
+    }
+  }
+
+  const uploads = await UploadHistory.find(filter).select("_id");
+
+  return uploads.map((u) => u._id);
+};
+
 export const getUploads = async (req, res) => {
   try {
     const { fileType } = req.query;
