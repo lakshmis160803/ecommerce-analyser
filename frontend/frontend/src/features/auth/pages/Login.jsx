@@ -2,14 +2,14 @@
 import { useState, useEffect } from "react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate,Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { login } from "../store/authSlice";
 
 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
+
 
   const { isAuthenticated, loading, error } =
     useSelector((state) => state.auth);
@@ -60,9 +60,9 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex flex-col lg:flex-row">
       {/* LEFT */}
-      <div className="w-1/2 bg-white flex flex-col justify-center px-20">
+      <div className="w-full lg:w-1/2 bg-white flex flex-col justify-center px-6 sm:px-10 lg:px-20 py-10">
         <div className="flex items-center gap-3 mb-10">
           <div className="w-12 h-12 bg-violet-600 rounded-xl flex items-center justify-center text-white text-xl">
             📊
@@ -109,12 +109,7 @@ const Login = () => {
                 Password
               </label>
 
-              <button
-                type="button"
-                className="text-violet-600"
-              >
-                Forgot Password?
-              </button>
+
             </div>
 
             <div className="relative">
@@ -149,20 +144,7 @@ const Login = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              name="rememberMe"
-              checked={
-                formData.rememberMe
-              }
-              onChange={handleChange}
-            />
 
-            <span className="text-slate-600">
-              Remember me for 30 days
-            </span>
-          </div>
 
           {error && (
             <p className="text-red-500 text-sm">
@@ -181,33 +163,33 @@ const Login = () => {
           </button>
         </form>
 
-       <div className="flex items-center my-8">
-  <div className="flex-1 border-t"></div>
-  <span className="px-4 text-slate-400">
-    or
-  </span>
-  <div className="flex-1 border-t"></div>
-</div>
+        <div className="flex items-center my-8">
+          <div className="flex-1 border-t"></div>
+          <span className="px-4 text-slate-400">
+            or
+          </span>
+          <div className="flex-1 border-t"></div>
+        </div>
 
-<div className="text-center">
-  <Link
-    to="/signup"
-    className="inline-flex items-center justify-center w-full border border-violet-600 text-violet-600 py-4 rounded-2xl font-semibold hover:bg-violet-50"
-  >
-    Create New Account
-  </Link>
-</div>
+        <div className="text-center">
+          <Link
+            to="/signup"
+            className="inline-flex items-center justify-center w-full border border-violet-600 text-violet-600 py-4 rounded-2xl font-semibold hover:bg-violet-50"
+          >
+            Create New Account
+          </Link>
+        </div>
 
-<p className="text-center text-slate-500 mt-6">
-  New to Ecom Intelligence?
-</p>
+        <p className="text-center text-slate-500 mt-6">
+          New to Ecom Intelligence?
+        </p>
 
-      
+
       </div>
 
-    
+
       {/* RIGHT */}
-      <div className="w-1/2 bg-[#0F0B1F] flex flex-col justify-center px-20 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-[#0F0B1F] flex-col justify-center px-20 relative overflow-hidden">
         {/* Ambient glow */}
         <div className="absolute -top-32 -right-32 w-96 h-96 bg-violet-600 rounded-full blur-3xl opacity-30"></div>
         <div className="absolute bottom-0 left-0 w-72 h-72 bg-fuchsia-500 rounded-full blur-3xl opacity-20"></div>

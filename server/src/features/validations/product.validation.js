@@ -1,6 +1,4 @@
 import { z } from "zod";
-
-// Create Product
 export const createProductSchema = z.object({
   productId: z
     .string()

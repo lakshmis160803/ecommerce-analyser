@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-const protect = (req, res, next) => {
+const  protect = (req, res, next) => {
   console.log("Cookies:", req.cookies);
 
   const token = req.cookies.accessToken;

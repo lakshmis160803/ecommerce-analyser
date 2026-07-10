@@ -142,10 +142,31 @@ const filteredProducts = [...allProducts]
         return 0;
     }
   });
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-purple-100 p-8">
+const processedCategoryData = (() => {
+  const sorted = [...categoryData].sort(
+    (a, b) => b.value - a.value
+  );
 
-      <h1 className="text-4xl font-bold mb-6">Product Analysis</h1>
+  const top = sorted.slice(0, 5);
+
+  const others = sorted
+    .slice(5)
+    .reduce((sum, item) => sum + item.value, 0);
+
+  if (others > 0) {
+    top.push({
+      name: "Others",
+      value: others,
+    });
+  }
+
+  return top;
+})();
+
+  return (
+   <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-purple-100 p-4 sm:p-6 lg:p-8">
+
+      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6">Product Analysis</h1>
 
       {/* ✅ Dataset Selector */}
      <div className="mb-8 bg-white p-5 rounded-2xl shadow">
@@ -157,8 +178,7 @@ const filteredProducts = [...allProducts]
   <select
     value={dateRange}
     onChange={(e) => setDateRange(e.target.value)}
-    className="border rounded-lg p-2 w-72"
-  >
+   className="border rounded-lg p-2 w-full sm:w-72">
     <option value="today">Today</option>
     <option value="yesterday">Yesterday</option>
     <option value="last7days">Last 7 Days</option>
@@ -173,7 +193,7 @@ const filteredProducts = [...allProducts]
 </div>
 
       {/* Cards */}
-     <div className="grid md:grid-cols-4 gap-6 mb-8">
+     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
 
   <div className="bg-white p-6 rounded-3xl shadow-lg">
     <h3 className="text-slate-500">
@@ -186,7 +206,7 @@ const filteredProducts = [...allProducts]
   </div>
         <div className="bg-white p-6 rounded-3xl shadow-lg">
           <h3 className="text-slate-500">Top Product</h3>
-          <p className="text-2xl font-bold text-violet-600 mt-2">{topProduct}</p>
+          <p className="text-xl lg:text-2xl break-words font-bold text-violet-600 mt-2">{topProduct}</p>
         </div>
 
         <div className="bg-white p-6 rounded-3xl shadow-lg">
@@ -202,7 +222,7 @@ const filteredProducts = [...allProducts]
       </div>
 
       {/* Charts */}
-      <div className={`grid lg:grid-cols-2 gap-8 transition-opacity ${loading ? "opacity-40" : "opacity-100"}`}>
+<div className={`grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6 transition-opacity ${loading ? "opacity-40" : "opacity-100"}`}>
 
         {/* Top Products Bar Chart */}
         <div className="bg-white p-6 rounded-3xl shadow-lg">
@@ -229,7 +249,18 @@ const filteredProducts = [...allProducts]
           ) : (
             <ResponsiveContainer width="100%" height={350}>
               <BarChart data={productData}>
-                <XAxis dataKey="productName" angle={-45} textAnchor="end" height={100} />
+               <XAxis
+dataKey="productName"
+angle={-45}
+textAnchor="end"
+height={80}
+tick={{ fontSize: 10 }}
+tickFormatter={(value) =>
+  value.length > 10
+    ? value.slice(0, 10) + "..."
+    : value
+}
+/>
                 <YAxis />
                 <Tooltip />
                 <Bar dataKey="soldUnits" fill="#7C3AED" radius={[10, 10, 0, 0]} />
@@ -238,33 +269,69 @@ const filteredProducts = [...allProducts]
           )}
         </div>
 
-        {/* Category Pie Chart */}
         <div className="bg-white p-6 rounded-3xl shadow-lg">
-          <h2 className="text-xl font-semibold mb-4">Category Distribution</h2>
-          {categoryData.length === 0 ? (
-            <div className="h-64 flex items-center justify-center text-slate-400">
-              No data for selected upload
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height={350}>
-              <PieChart>
-                <Pie data={categoryData} dataKey="value" nameKey="name" outerRadius={110} label>
-                  {categoryData.map((entry, index) => (
-                    <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          )}
-        </div>
+
+  <div className="flex justify-between items-center mb-4">
+    <h2 className="text-xl font-semibold">
+      Category Distribution
+    </h2>
+
+    <span className="text-sm text-slate-500">
+      Top Categories
+    </span>
+  </div>
+
+  {categoryData.length === 0 ? (
+    <div className="h-64 flex items-center justify-center text-slate-400">
+      No data for selected upload
+    </div>
+  ) : (
+    <ResponsiveContainer width="100%" height={350}>
+      <PieChart>
+
+        <Pie
+          data={processedCategoryData}
+          dataKey="value"
+          nameKey="name"
+          cx="50%"
+          cy="42%"
+          innerRadius={50}
+          outerRadius={80}
+          paddingAngle={3}
+          label={false}
+        >
+          {processedCategoryData.map((entry, index) => (
+            <Cell
+              key={index}
+              fill={COLORS[index % COLORS.length]}
+            />
+          ))}
+        </Pie>
+
+        <Tooltip />
+
+        <Legend
+          layout="horizontal"
+          verticalAlign="bottom"
+          align="center"
+          iconType="circle"
+          wrapperStyle={{
+            fontSize: 12,
+            paddingTop: 10,
+          }}
+        />
+
+      </PieChart>
+    </ResponsiveContainer>
+  )}
+
+</div>
 
       </div>
      {showAllProducts && (
   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
 
-    <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-7xl h-[90vh] overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-2xl w-[98%] sm:w-[95%] max-w-7xl h-[90vh] overflow-hidden">
 
       {/* Header */}
       <div className="flex justify-between items-center border-b px-8 py-5">
@@ -284,14 +351,14 @@ const filteredProducts = [...allProducts]
       </div>
 
       {/* Search + Sort */}
-      <div className="flex justify-between items-center p-6 border-b">
+      <div className="flex flex-col md:flex-row gap-4 md:justify-between md:items-center items-center p-6 border-b">
 
         <input
           type="text"
           placeholder="Search product..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="border rounded-lg px-4 py-2 w-80"
+          className="border rounded-lg px-4 py-2 w-full md:w-80"
         />
 
         <select
@@ -308,7 +375,7 @@ const filteredProducts = [...allProducts]
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-4 gap-5 p-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 p-6">
 
         <div className="bg-violet-50 rounded-xl p-4">
           <p className="text-gray-500">Products</p>
@@ -355,7 +422,7 @@ const filteredProducts = [...allProducts]
       </div>
 
       {/* Table */}
-      <div className="overflow-y-auto h-[48vh] px-6">
+      <div className="overflow-x-auto overflow-y-auto h-[48vh] px-6">
 
         <table className="w-full border-collapse">
 
@@ -435,7 +502,7 @@ const filteredProducts = [...allProducts]
       </div>
 
       {/* Footer */}
-      <div className="border-t flex justify-between items-center px-6 py-4">
+      <div className="border-t flex flex-col sm:flex-row gap-4 sm:justify-between sm:items-center items-center px-6 py-4">
 
         <p className="text-gray-500">
           Showing {filteredProducts.length} Products

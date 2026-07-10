@@ -12,7 +12,11 @@ import {
   XAxis,
   YAxis,
   Tooltip,
+  RadialBarChart,
+  RadialBar,
+    
 } from "recharts";
+
 import {
   FaGlobeAsia,
   FaRupeeSign,
@@ -99,6 +103,13 @@ const RegionalAnalysis = () => {
     loading,
     error,
   });
+const revenueData = revenue
+  .filter((item) => item._id)
+  .map((item, index) => ({
+    region: item._id,
+    revenue: item.revenue,
+    fill: COLORS[index % COLORS.length],
+  }));
 
   if (loading) {
     return (
@@ -202,145 +213,264 @@ const RegionalAnalysis = () => {
 </div>
       </div>
 
-      {/* Revenue */}
-      <div className="bg-white shadow rounded-lg p-4">
-        <h2 className="font-semibold mb-3">
-          Revenue Data
+     <div className="bg-white rounded-2xl shadow p-6">
+
+    <div className="mb-6">
+        <h2 className="text-2xl font-bold">
+            💰 Revenue by Region
         </h2>
 
-        <div className="bg-white rounded-xl shadow p-6">
-  <h2 className="text-xl font-semibold mb-4">
-    Revenue by Region
-  </h2>
-<ResponsiveContainer width="100%" height={350}>
-  <BarChart
-    data={revenue.filter((item) => item._id)}
-    margin={{
-      top: 20,
-      right: 30,
-      left: 50,
-      bottom: 20,
-    }}
-  >
-    <CartesianGrid strokeDasharray="3 3" />
+        <p className="text-gray-500">
+            Revenue contribution across all regions
+        </p>
+    </div>
 
-    <XAxis dataKey="_id" />
+    <ResponsiveContainer width="100%" height={420}>
+        <RadialBarChart
+            innerRadius="25%"
+            outerRadius="90%"
+            data={revenueData}
+            startAngle={180}
+            endAngle={0}
+        >
+            <RadialBar
+                background
+                dataKey="revenue"
+                cornerRadius={15}
+                label={{
+                    position: "insideStart",
+                    fill: "#fff",
+                    fontWeight: 600,
+                }}
+            />
 
-    <YAxis
-      width={80}
-      tickFormatter={(value) => value.toLocaleString()}
-    />
+            <Legend
+                iconSize={12}
+                layout="vertical"
+                verticalAlign="middle"
+                align="right"
+            />
 
-    <Tooltip
-      formatter={(value) => [
-        `₹${Number(value).toLocaleString()}`,
-        "Revenue",
-      ]}
-    />
+            <Tooltip
+                formatter={(value) => [
+                    `₹${Number(value).toLocaleString()}`,
+                    "Revenue",
+                ]}
+            />
+        </RadialBarChart>
+    </ResponsiveContainer>
 
-    <Legend />
-
-    <Bar
-      dataKey="revenue"
-      fill="#7c3aed"
-      radius={[8, 8, 0, 0]}
-    />
-  </BarChart>
-</ResponsiveContainer>
 </div>
-      </div>
+<ResponsiveContainer width="100%" height={320}>
+  <PieChart>
+    <Pie
+      data={orders.filter(item => item._id)}
+      dataKey="orders"
+      nameKey="_id"
+      innerRadius={70}
+      outerRadius={110}
+      paddingAngle={4}
+      cornerRadius={6}
+    >
+      {orders.map((entry, index) => (
+        <Cell
+          key={index}
+          fill={COLORS[index % COLORS.length]}
+        />
+      ))}
+    </Pie>
 
-      {/* Orders */}
-      <div className="bg-white shadow rounded-lg p-4">
-        <h2 className="font-semibold mb-3">
-          Orders Data
-        </h2>
+    <Tooltip />
 
-      <div className="bg-white rounded-xl shadow p-6">
-  <h2 className="text-xl font-semibold mb-4">
-    Orders by Region
-  </h2>
+    <Legend
+      verticalAlign="bottom"
+      align="center"
+      iconType="circle"
+      wrapperStyle={{
+        paddingTop: "20px",
+        fontSize: "14px",
+      }}
+    />
+  </PieChart>
+</ResponsiveContainer>
 
-  <ResponsiveContainer width="100%" height={350}>
-    <PieChart>
-      <Pie
-        data={orders}
-        dataKey="orders"
-        nameKey="_id"
-        outerRadius={120}
-        label
+     {/* Quantity */}
+<div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+
+  <div className="mb-6">
+    <h2 className="text-2xl font-bold text-gray-800">
+      📦 Quantity by Region
+    </h2>
+
+    <p className="text-sm text-gray-500">
+      Quantity sold across all regions
+    </p>
+  </div>
+
+  <ResponsiveContainer width="100%" height={320}>
+    <BarChart
+      data={quantity.filter(item => item._id)}
+      layout="vertical"
+      margin={{
+        top: 10,
+        right: 30,
+        left: 20,
+        bottom: 10,
+      }}
+    >
+      <CartesianGrid
+        horizontal={false}
+        strokeDasharray="3 3"
+      />
+
+      <XAxis type="number" hide />
+
+      <YAxis
+        type="category"
+        dataKey="_id"
+        axisLine={false}
+        tickLine={false}
+        width={80}
+      />
+
+      <Tooltip
+        formatter={(value) => [
+          value,
+          "Quantity",
+        ]}
+      />
+
+      <Bar
+        dataKey="quantity"
+        radius={[0, 12, 12, 0]}
       >
-        {orders.map((entry, index) => (
+        {quantity.map((entry, index) => (
           <Cell
             key={index}
-            fill={COLORS[index % COLORS.length]}
+            fill={
+              ["#8B5CF6", "#22C55E", "#F97316", "#3B82F6"][index]
+            }
           />
         ))}
-      </Pie>
-
-      <Tooltip />
-      <Legend />
-    </PieChart>
+      </Bar>
+    </BarChart>
   </ResponsiveContainer>
+
 </div>
-      </div>
 
-      {/* Quantity */}
-      <div className="bg-white shadow rounded-lg p-4">
-        <h2 className="font-semibold mb-3">
-          Quantity Data
-        </h2>
+      {/* Regional Summary */}
+<div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
 
-       <ResponsiveContainer width="100%" height={350}>
-  <BarChart data={quantity.filter(item => item._id)}>
-    <CartesianGrid strokeDasharray="3 3" />
-    <XAxis dataKey="_id" />
-    <YAxis />
-    <Tooltip />
-    <Legend />
-    <Bar
-      dataKey="quantity"
-      fill="#22c55e"
-      radius={[8, 8, 0, 0]}
-    />
-  </BarChart>
-</ResponsiveContainer>
-      </div>
+  <div className="px-6 py-5 border-b">
+    <h2 className="text-2xl font-bold text-gray-800">
+      📋 Regional Summary
+    </h2>
 
-      {/* Table */}
-      <div className="bg-white shadow rounded-lg p-4">
-        <h2 className="font-semibold mb-3">
-          Table Data
-        </h2>
+    <p className="text-sm text-gray-500 mt-1">
+      Revenue, Orders and Quantity across regions
+    </p>
+  </div>
 
-        <table className="w-full border-collapse">
-  <thead>
-    <tr className="bg-purple-600 text-white">
-      <th className="p-3">Region</th>
-      <th className="p-3">Orders</th>
-      <th className="p-3">Quantity</th>
-      <th className="p-3">Revenue</th>
-    </tr>
-  </thead>
+  <div className="overflow-x-auto">
+    <table className="w-full">
 
-  <tbody>
-    {table
-      .filter(region => region._id)
-      .map(region => (
-        <tr key={region._id} className="border-b hover:bg-gray-50">
-          <td className="p-3">{region._id}</td>
-          <td className="p-3">{region.orders}</td>
-          <td className="p-3">{region.quantity}</td>
-          <td className="p-3">
-            ₹{region.revenue.toLocaleString()}
-          </td>
+      <thead>
+        <tr className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white">
+
+          <th className="px-6 py-4 text-left">
+            #
+          </th>
+
+          <th className="px-6 py-4 text-left">
+            Region
+          </th>
+
+          <th className="px-6 py-4 text-center">
+            Orders
+          </th>
+
+          <th className="px-6 py-4 text-center">
+            Quantity
+          </th>
+
+          <th className="px-6 py-4 text-right">
+            Revenue
+          </th>
+
         </tr>
-      ))}
-  </tbody>
-</table>
-      </div>
-    </div>
-  );
+      </thead>
+
+      <tbody>
+
+        {table
+          .filter(region => region._id)
+          .sort((a, b) => b.revenue - a.revenue)
+          .map((region, index) => (
+
+            <tr
+              key={region._id}
+              className={`transition hover:bg-violet-50 ${
+                index % 2 === 0
+                  ? "bg-white"
+                  : "bg-gray-50"
+              }`}
+            >
+
+              <td className="px-6 py-4 font-semibold text-gray-500">
+                {index + 1}
+              </td>
+
+              <td className="px-6 py-4">
+
+                <span className="inline-flex items-center gap-2">
+
+                  <span className="w-3 h-3 rounded-full bg-violet-500"></span>
+
+                  <span className="font-semibold">
+                    {region._id}
+                  </span>
+
+                </span>
+
+              </td>
+
+              <td className="px-6 py-4 text-center">
+
+                <span className="bg-violet-100 text-violet-700 px-3 py-1 rounded-full font-semibold">
+
+                  {region.orders}
+
+                </span>
+
+              </td>
+
+              <td className="px-6 py-4 text-center">
+
+                <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">
+
+                  {region.quantity}
+
+                </span>
+
+              </td>
+
+              <td className="px-6 py-4 text-right font-bold text-emerald-600">
+
+                ₹ {region.revenue.toLocaleString()}
+
+              </td>
+
+            </tr>
+
+          ))}
+
+           </tbody>
+    </table>
+  </div>
+
+</div> 
+</div> 
+);
 };
 
 export default RegionalAnalysis;

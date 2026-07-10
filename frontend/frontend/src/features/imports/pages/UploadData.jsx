@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 import axiosInstance from "../../../api/axiosInstance";
 import Papa from "papaparse";
@@ -15,7 +15,7 @@ import {
   autoMapFields,
   autoMapOrderFields,
   detectFileType,
-} from "../../utils/fieldMapping.js";
+} from "../../../../../../server/src/features/utils/fieldMapping.js";
 
 import { useSelector } from "react-redux";
 
@@ -38,8 +38,9 @@ const UploadData = () => {
   const [file, setFile] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [product, setProduct] = useState(EMPTY_PRODUCT);
+const uploadRef = useRef(null);
+const [uploadStatus, setUploadStatus] = useState("idle");
 
-  // Shared transform logic used by both CSV and Excel branches
   const buildPayload = (rows) => {
     const fileType = detectFileType(rows[0]);
     console.log("FIRST ROW:", rows[0]);
@@ -87,16 +88,24 @@ console.log("DETECTED TYPE:", fileType);
     return { uploadUrl, transformedData };
   };
 
+
   const sendUpload = async (uploadUrl, transformedData) => {
+  try {
     await axiosInstance.post(uploadUrl, {
       fileName: file.name,
       data: transformedData,
     });
-    alert("File Uploaded Successfully");
-  };
+
+    setUploadStatus("success");
+  } catch (err) {
+    setUploadStatus("error");
+    throw err;
+  }
+};
 
   const handleUpload = async () => {
     if (!file) return;
+    setUploadStatus("uploading");
 
     const extension = file.name.split(".").pop().toLowerCase();
 
@@ -163,7 +172,7 @@ console.log("DETECTED TYPE:", fileType);
       alert("Something went wrong while uploading.");
     }
   };
-
+  
   const handleManualUpload = async () => {
     try {
       await axiosInstance.post("/products", {
@@ -242,38 +251,144 @@ console.log("DETECTED TYPE:", fileType);
   Add Product Manually
 </button>
 
-          <label className="border-2 border-dashed border-violet-300 rounded-3xl h-72 flex flex-col items-center justify-center cursor-pointer hover:bg-violet-50 transition">
-            <div className="w-20 h-20 rounded-full bg-violet-600 flex items-center justify-center text-white text-4xl mb-4">
-              📊
-            </div>
-            <h2 className="text-3xl font-bold">Upload CSV / Excel</h2>
-            <p className="text-slate-500 mt-2">CSV, XLSX, XLS Supported</p>
-           <input
-  type="file"
-  className="hidden"
-  accept=".csv,.xlsx,.xls"
-  disabled={isViewer}
-  onChange={(e) => setFile(e.target.files[0])}
-/>
-          </label>
+       {uploadStatus === "success" ? (
 
-          {file && (
-            <div className="mt-4 p-4 bg-slate-100 rounded-xl">
-              Selected File:
-              <strong className="ml-2">{file.name}</strong>
-            </div>
-          )}
+  <div className="border-2 border-green-200 bg-green-50 rounded-3xl p-10 text-center">
 
-        <button
+  <div className="text-6xl mb-4">
+    ✅
+  </div>
+
+  <h2 className="text-3xl font-bold text-green-700">
+    Dataset Uploaded Successfully
+  </h2>
+
+  <p className="mt-3 text-gray-600">
+    {file?.name}
+  </p>
+
+  <button
+    className="mt-8 px-6 py-3 bg-violet-600 text-white rounded-xl hover:bg-violet-700"
+    onClick={() => {
+      setFile(null);
+      setUploadStatus("idle");
+
+      setTimeout(() => {
+        uploadRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }, 100);
+    }}
+  >
+    Upload Another File
+  </button>
+
+</div>
+
+) : (
+
+  <div ref={uploadRef}>
+  <label className="border-2 border-dashed border-violet-300 rounded-3xl h-72 flex flex-col items-center justify-center cursor-pointer hover:bg-violet-50 transition">
+    <div className="w-20 h-20 rounded-full bg-violet-600 flex items-center justify-center text-white text-4xl mb-4">
+      📊
+    </div>
+
+    <h2 className="text-3xl font-bold">
+      Upload CSV / Excel
+    </h2>
+
+    <p className="text-slate-500 mt-2">
+      CSV, XLSX, XLS Supported
+    </p>
+
+    <input
+      type="file"
+      className="hidden"
+      accept=".csv,.xlsx,.xls"
+      disabled={isViewer}
+      onChange={(e) => {
+        setFile(e.target.files[0]);
+        setUploadStatus("idle");
+      }}
+    />
+  </label>
+</div>
+
+)}
+
+       {file && (
+  <div className="mt-5 border rounded-xl p-4 bg-slate-50">
+
+    <div className="flex justify-between items-center">
+
+      <div>
+        <h3 className="font-semibold">
+          {file.name}
+        </h3>
+
+        <p className="text-sm text-gray-500">
+          {(file.size / 1024).toFixed(2)} KB
+        </p>
+      </div>
+
+      {uploadStatus === "idle" && (
+        <span className="text-yellow-600 font-semibold">
+          🟡 Ready
+        </span>
+      )}
+
+      {uploadStatus === "uploading" && (
+        <span className="text-blue-600 font-semibold">
+          🔄 Uploading...
+        </span>
+      )}
+
+      {uploadStatus === "success" && (
+        <span className="text-green-600 font-semibold">
+          ✅ Uploaded
+        </span>
+      )}
+
+      {uploadStatus === "error" && (
+        <span className="text-red-600 font-semibold">
+          ❌ Failed
+        </span>
+      )}
+
+    </div>
+
+  </div>
+)}
+
+       <button
   onClick={handleUpload}
-  disabled={isViewer}
-  className={`w-full mt-6 py-4 rounded-xl text-white font-semibold ${
-    isViewer
+  disabled={
+    isViewer ||
+    uploadStatus === "uploading" ||
+    uploadStatus === "success"
+  }
+  className={`w-full mt-6 py-4 rounded-xl font-semibold text-white ${
+    uploadStatus === "success"
+      ? "bg-green-600 cursor-default"
+      : isViewer
       ? "bg-gray-400 cursor-not-allowed"
       : "bg-gradient-to-r from-violet-600 to-purple-500"
   }`}
 >
-  Upload Dataset
+  {uploadStatus === "idle" && "Upload Dataset"}
+
+  {uploadStatus === "uploading" && (
+    <div className="flex items-center justify-center gap-2">
+      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+      Uploading...
+    </div>
+  )}
+
+  {uploadStatus === "success" && "✓ Uploaded Successfully"}
+
+  {uploadStatus === "error" && "Retry Upload"}
+  
 </button>
 
           {/* Manual Product Form */}
@@ -312,7 +427,10 @@ console.log("DETECTED TYPE:", fileType);
               </div>
 <button
   onClick={handleManualUpload}
-  disabled={isViewer}
+ disabled={
+    isViewer ||
+    uploadStatus==="uploading"
+}
   className={`mt-6 px-8 py-3 rounded-xl text-white ${
     isViewer
       ? "bg-gray-400 cursor-not-allowed"

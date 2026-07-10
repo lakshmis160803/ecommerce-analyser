@@ -4,7 +4,7 @@ const customerSchema = new mongoose.Schema(
   {
     customerId: {
       type: String,
-      unique: true,
+      unique: false,
     },
 
     customerName: {
@@ -75,5 +75,7 @@ const customerSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+customerSchema.index({ customerId: 1, uploadedBy: 1 }, { unique: true });
 
 export default mongoose.model("Customer", customerSchema);

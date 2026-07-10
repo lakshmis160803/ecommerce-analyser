@@ -10,12 +10,14 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import UserManagement from "../features/users/pages/UserManagement";
 import CustomerAnalysis from "../features/analytics/pages/CustomerAnalysis";
 import RegionalAnalysis from "../features/analytics/pages/regionalAnalysis";
+import InventoryAnalysis from "../features/analytics/pages/InventoryAnalysis";
+import Reports from "../features/reports/pages/Reports";
+import NotFound from "../features/notfound/NotFound";
 const AppRoutes = () => {
   return (
     <Routes>
 
       <Route path="/" element={<Login />} />
-
       <Route
         path="/signup"
         element={<SignUp />}
@@ -54,15 +56,28 @@ const AppRoutes = () => {
           path="/users"
         />
 
-      <Route
-  path="/customers"
-  element={<CustomerAnalysis />}
-/>
+        <Route
+          path="/customers"
+          element={<CustomerAnalysis />}
+        />
+        <Route
+          path="/regional"
+          element={<RegionalAnalysis />}
+        />
+        <Route
+          path="/inventory"
+          element={<InventoryAnalysis />}
+        />
 <Route
-path="/regional"
-element={<RegionalAnalysis/>}
+  path="/reports"
+  element={<Reports />}
 />
       </Route>
+
+      <Route
+        path="*"
+        element={<NotFound />}
+      />
     </Routes>
   );
 };
