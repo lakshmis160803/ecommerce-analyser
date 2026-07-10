@@ -13,14 +13,20 @@ import regionalRoutes from "./src/features/regional/regional.Routes.js"
 import inventoryRoutes from "./src/features/inventory/inventory.routes.js"
 import reportRoutes from "./src/features/reports/report.routes.js"
 dotenv.config();
+console.log("FRONTEND_URL =", process.env.FRONTEND_URL);
 connectDB();
 const app = express();
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      process.env.FRONTEND_URL,
+    ],
     credentials: true,
   })
 );
+
+console.log("FRONTEND_URL =", process.env.FRONTEND_URL);
 app.use(cookieParser());
 app.use(
   express.json({
