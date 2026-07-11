@@ -346,7 +346,13 @@ tickFormatter={(value) =>
           </p>
         </div>
 
-   
+        <button
+          onClick={() => setShowAllProducts(false)}
+          aria-label="Close"
+          className="text-3xl leading-none text-gray-400 hover:text-gray-700 transition-colors"
+        >
+          &times;
+        </button>
 
       </div>
 
