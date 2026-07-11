@@ -24,25 +24,10 @@ import {
 
 import { useSelector } from "react-redux";
 
-const EMPTY_PRODUCT = {
-  productId: "",
-  productName: "",
-  category: "",
-  brand: "",
-  price: "",
-  costPrice: "",
-  stock: "",
-  soldUnits: "",
-  rating: "",
-  region: "",
-};
-
 const UploadData = () => {
   const { user } = useSelector((state) => state.auth);
   const isViewer = user?.role === "viewer";
   const [file, setFile] = useState(null);
-  const [showForm, setShowForm] = useState(false);
-  const [product, setProduct] = useState(EMPTY_PRODUCT);
   const uploadRef = useRef(null);
   const [uploadStatus, setUploadStatus] = useState("idle");
   const [unknownColumns, setUnknownColumns] = useState([]);
@@ -260,66 +245,6 @@ const UploadData = () => {
     }
   };
 
-  const handleManualUpload = async () => {
-    // Bug fix: mirror the backend's Zod requirements client-side so the
-    // user gets immediate, specific feedback instead of a generic failure
-    // after a round trip (or worse, a silent no-op).
-    const validationErrors = [];
-
-    if (!product.productId.trim()) validationErrors.push("Product ID is required.");
-    if (!product.productName.trim() || product.productName.trim().length < 2)
-      validationErrors.push("Product name must be at least 2 characters.");
-    if (!product.category.trim() || product.category.trim().length < 2)
-      validationErrors.push("Category is required (min 2 characters).");
-    if (!product.brand.trim() || product.brand.trim().length < 2)
-      validationErrors.push("Brand is required (min 2 characters).");
-    if (!product.region.trim() || product.region.trim().length < 2)
-      validationErrors.push("Region is required (min 2 characters).");
-    if (!(Number(product.price) > 0)) validationErrors.push("Price must be greater than 0.");
-    if (Number(product.costPrice) < 0) validationErrors.push("Cost price cannot be negative.");
-    if (Number(product.stock) < 0) validationErrors.push("Stock cannot be negative.");
-    if (Number(product.soldUnits) < 0) validationErrors.push("Sold units cannot be negative.");
-    if (Number(product.rating) < 0 || Number(product.rating) > 5)
-      validationErrors.push("Rating must be between 0 and 5.");
-
-    if (validationErrors.length > 0) {
-      alert(validationErrors.join("\n"));
-      return;
-    }
-
-    try {
-      await axiosInstance.post("/products", {
-        productId: product.productId,
-        productName: product.productName,
-        category: product.category,
-        brand: product.brand,
-        price: Number(product.price),
-        costPrice: Number(product.costPrice) || 0,
-        stock: Number(product.stock) || 0,
-        soldUnits: Number(product.soldUnits) || 0,
-        rating: Number(product.rating) || 0,
-        region: product.region,
-      });
-
-      alert("Product Added Successfully");
-      setProduct(EMPTY_PRODUCT);
-      setShowForm(false);
-    } catch (error) {
-      console.error(error);
-      // Bug fix: backend sends `errors` (array), not `message` — reading
-      // `.message` here always fell through to the generic fallback text,
-      // hiding the actual validation reason from the user.
-      const backendErrors = error.response?.data?.errors;
-      if (Array.isArray(backendErrors) && backendErrors.length > 0) {
-        alert(backendErrors.map((e) => e.message).join("\n"));
-      } else {
-        alert(
-          error.response?.data?.message || "Failed to Add Product"
-        );
-      }
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-purple-100 p-10 relative overflow-hidden">
       {/* Background Icons */}
@@ -341,16 +266,6 @@ const UploadData = () => {
       <div className="relative z-10 flex justify-center">
         <div className="bg-white w-full max-w-5xl rounded-3xl shadow-xl p-8">
           <h1 className="text-4xl font-bold mb-3">Product Data Management</h1>
-
-          <button
-            onClick={() => !isViewer && setShowForm(!showForm)}
-            disabled={isViewer}
-            className={`px-6 py-3 rounded-xl mb-8 text-white ${
-              isViewer ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"
-            }`}
-          >
-            Add Product Manually
-          </button>
 
           {uploadStatus === "success" ? (
             <div className="border-2 border-green-200 bg-green-50 rounded-3xl p-10 text-center">
@@ -553,45 +468,10 @@ const UploadData = () => {
             {uploadStatus === "error" && "Retry Upload"}
           </button>
 
-          {/* Manual Product Form */}
-          {showForm && (
-            <div className="mt-10 border-t pt-8">
-              <h2 className="text-2xl font-bold mb-6">Add Product Manually</h2>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                {Object.keys(product).map((key) => (
-                  <input
-                    key={key}
-                    type={
-                      ["price", "costPrice", "stock", "soldUnits", "rating"].includes(key) ? "number" : "text"
-                    }
-                    placeholder={key}
-                    value={product[key]}
-                    onChange={(e) =>
-                      setProduct({
-                        ...product,
-                        [key]: e.target.value,
-                      })
-                    }
-                    className="border p-3 rounded-xl"
-                  />
-                ))}
-              </div>
-              <button
-                onClick={handleManualUpload}
-                disabled={isViewer || uploadStatus === "uploading"}
-                className={`mt-6 px-8 py-3 rounded-xl text-white ${
-                  isViewer ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"
-                }`}
-              >
-                Save Product
-              </button>
-              {isViewer && (
-                <div className="mb-6 rounded-lg bg-yellow-100 border border-yellow-300 p-4 text-yellow-800">
-                  You have Viewer access. Uploading and manually adding products are disabled. Contact a Super
-                  Admin if you need Admin permissions.
-                </div>
-              )}
+          {isViewer && (
+            <div className="mt-6 rounded-lg bg-yellow-100 border border-yellow-300 p-4 text-yellow-800">
+              You have Viewer access. Uploading products is disabled. Contact a Super Admin if you need
+              Admin permissions.
             </div>
           )}
         </div>
