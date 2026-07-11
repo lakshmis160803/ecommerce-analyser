@@ -257,6 +257,7 @@ export const createProduct = async (req, res) => {
   } catch (err) {
     res.status(400).json({
       success: false,
+      message: err.errors?.[0]?.message || "Validation failed",
       errors: err.errors,
     });
   }
