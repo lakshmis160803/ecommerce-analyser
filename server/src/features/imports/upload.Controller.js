@@ -115,6 +115,18 @@ export const addProduct = async (req, res) => {
       return res.status(400).json({ success: false, message: "Rating must be between 0 and 5." });
     }
 
+    // Fix: manually added products previously had no uploadId at all,
+    // so they were invisible to any query that filters by uploadId
+    // (top-products, dashboard, all-products, etc.). Creating a matching
+    // UploadHistory record — same as uploadProducts does for CSV/Excel
+    // imports — keeps both code paths consistent.
+    const upload = await UploadHistory.create({
+      fileName: "Manual Entry",
+      fileType: "product",
+      totalRecords: 1,
+      uploadedBy: req.user.id,
+    });
+
     const product = await Product.create({
       productId, productName,
       category: category || "",
@@ -125,6 +137,7 @@ export const addProduct = async (req, res) => {
       soldUnits: Number(soldUnits) || 0,
       rating: Number(rating) || 0,
       region: region || "",
+      uploadId: upload._id,
       userId: req.user.id,
     });
 
