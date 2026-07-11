@@ -16,12 +16,24 @@ dotenv.config();
 console.log("FRONTEND_URL =", process.env.FRONTEND_URL);
 connectDB();
 const app = express();
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.FRONTEND_URL,
+].filter(Boolean); // drops undefined if env var isn't set
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      process.env.FRONTEND_URL,
-    ],
+    origin: (origin, callback) => {
+      // allow requests with no origin (e.g. curl, mobile apps, server-to-server)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      console.warn("Blocked by CORS:", origin);
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );

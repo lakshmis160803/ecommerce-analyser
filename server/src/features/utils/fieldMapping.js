@@ -211,7 +211,16 @@ export const autoMapFields = (row) => {
     }
   });
 
-  return mapped;
+ const mappedColumns = Object.values(mapped).filter(Boolean);
+
+const unknownColumns = Object.keys(row).filter(
+  (column) => !mappedColumns.includes(column)
+);
+
+return {
+  mapping: mapped,
+  unknownColumns,
+};
 };
 
 // ✅ Same mapping strategy, but against the order alias list
@@ -238,8 +247,16 @@ export const autoMapOrderFields = (row) => {
       console.log(`✅ "${schemaField}" → "${matchedColumn}"`);
     }
   });
+const mappedColumns = Object.values(mapped).filter(Boolean);
 
-  return mapped;
+const unknownColumns = Object.keys(row).filter(
+  (column) => !mappedColumns.includes(column)
+);
+
+return {
+  mapping: mapped,
+  unknownColumns,
+};
 };
 
 
