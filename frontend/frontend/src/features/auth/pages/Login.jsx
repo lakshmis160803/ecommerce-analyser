@@ -4,7 +4,7 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { login } from "../store/authSlice";
-
+import { toast } from "react-toastify";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -45,18 +45,18 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      await dispatch(
-        login({
-          email: formData.email,
-          password: formData.password,
-        })
-      ).unwrap();
+  try {
+  await dispatch(
+    login({
+      email: formData.email,
+      password: formData.password,
+    })
+  ).unwrap();
 
-      console.log("Login Success");
-    } catch (err) {
-      console.log(err);
-    }
+  toast.success("Login successful!");
+} catch (err) {
+  toast.error(err || "Invalid email or password");
+}
   };
 
   return (
@@ -144,13 +144,6 @@ const Login = () => {
             </div>
           </div>
 
-
-
-          {error && (
-            <p className="text-red-500 text-sm">
-              {error}
-            </p>
-          )}
 
           <button
             type="submit"
