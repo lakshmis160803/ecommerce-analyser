@@ -1,7 +1,7 @@
 import express from "express";
 import protect from "../../middleware/authMiddleware.js";
 import {
-  createProduct,
+  
   getTopProducts,
   getCategoryStats,
   getRegionRevenue,
@@ -24,6 +24,5 @@ router.get("/rating-distribution", protect, getRatingDistribution);
 router.get("/category-distribution", protect, getCategoryDistribution);
 router.get("/price-distribution", protect, getPriceDistribution);
 router.get("/all-products", protect, getAllProducts);
-router.post("/", protect, createProduct);
 
 export default router;

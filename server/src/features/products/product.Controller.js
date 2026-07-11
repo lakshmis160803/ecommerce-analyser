@@ -1,14 +1,6 @@
 import Product from "./Product.js";
 import mongoose from "mongoose";
 
-// Bug fix: previously every query filtered by `uploadId: { $in: uploadIds }`,
-// where uploadIds only ever came from UploadHistory (i.e. CSV/Excel imports).
-// Manually created products never get an uploadId, so they silently failed
-// to match this filter and never appeared in any analysis endpoint.
-//
-// Fix: filter directly on the product's own `createdAt` (it already has
-// `timestamps: true`) instead of going through UploadHistory. This treats
-// manually added and bulk-uploaded products identically.
 const getDateFilter = (range) => {
   const now = new Date();
 
