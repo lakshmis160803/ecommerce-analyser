@@ -65,11 +65,29 @@ const UploadData = () => {
   const buildPayload = (rows) => {
     const finalMapping = buildFinalMapping();
 
+    // Columns the user explicitly left as "Nullable (Ignore)" are still
+    // preserved (rather than dropped) by stashing them in customFields.
+    const ignoredColumns = unknownColumns.filter(
+      (column) => (unknownMapping[column] || "nullable") === "nullable"
+    );
+
+    const buildCustomFields = (row) => {
+      const customFields = {};
+      ignoredColumns.forEach((column) => {
+        if (row[column] !== undefined && row[column] !== "") {
+          customFields[column] = row[column];
+        }
+      });
+      return customFields;
+    };
+
     let transformedData = [];
 
     if (fileType === "product") {
       transformedData = rows.map((row) => ({
-        productId: row[finalMapping.productId] || "",
+        // Fix: fall back to null (not "") so multiple rows with an
+        // unmapped/blank ID don't collide against a unique index.
+        productId: row[finalMapping.productId] || null,
         productName: row[finalMapping.productName] || "",
         category: row[finalMapping.category] || "",
         brand: row[finalMapping.brand] || "",
@@ -79,10 +97,11 @@ const UploadData = () => {
         soldUnits: Number(row[finalMapping.soldUnits]) || 0,
         rating: Number(row[finalMapping.rating]) || 0,
         region: row[finalMapping.region] || "",
+        customFields: buildCustomFields(row),
       }));
     } else {
       transformedData = rows.map((row) => ({
-        orderId: row[finalMapping.orderId] || "",
+        orderId: row[finalMapping.orderId] || null,
         customerName: row[finalMapping.customerName] || "",
         productName: row[finalMapping.productName] || "",
         quantity: Number(row[finalMapping.quantity]) || 0,
@@ -91,6 +110,7 @@ const UploadData = () => {
         orderDate: row[finalMapping.orderDate]
           ? new Date(row[finalMapping.orderDate])
           : new Date(),
+        customFields: buildCustomFields(row),
       }));
     }
 
