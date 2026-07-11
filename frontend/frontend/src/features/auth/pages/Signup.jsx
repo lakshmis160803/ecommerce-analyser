@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../../../api/axiosInstance";
-
+import { toast } from "react-toastify";
 const SignUp = () => {
   const navigate = useNavigate();
   
@@ -14,8 +14,6 @@ const SignUp = () => {
   confirmPassword: "",
 });
 
-  const [error, setError] = useState("");
-
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -23,38 +21,40 @@ const SignUp = () => {
     });
   };
 
- const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
 
   setError("");
 
-  if (
-    formData.password !==
-    formData.confirmPassword
-  ) {
-    setError("Passwords do not match");
+  if (formData.password !== formData.confirmPassword) {
+    toast.error("Passwords do not match");
     return;
   }
 
-  try {
-    await axiosInstance.post(
-      "/auth/register",
-      {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-      }
-    );
+try {
+  await axiosInstance.post("/auth/register", {
+    name: formData.name,
+    email: formData.email,
+    password: formData.password,
+  });
 
-    alert("User created successfully");
+  setFormData({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
 
+  toast.success("Account created successfully!");
+
+  setTimeout(() => {
     navigate("/");
-  } catch (err) {
-    setError(
-      err.response?.data?.message ||
-      "Registration failed"
-    );
-  }
+  }, 1000);
+} catch (err) {
+  toast.error(
+    err.response?.data?.message || "Registration failed"
+  );
+}
 };
 
   return (
@@ -131,13 +131,6 @@ const SignUp = () => {
               placeholder="Confirm Password"
             />
           </div>
-
-          {error && (
-            <p className="text-red-500">
-              {error}
-            </p>
-          )}
-
           <button
             type="submit"
             className="w-full bg-violet-600 text-white py-4 rounded-xl font-semibold"
