@@ -88,15 +88,30 @@ const UploadData = () => {
         // Fix: fall back to null (not "") so multiple rows with an
         // unmapped/blank ID don't collide against a unique index.
         productId: row[finalMapping.productId] || null,
+        sku: row[finalMapping.sku] || "",
         productName: row[finalMapping.productName] || "",
+        description: row[finalMapping.description] || "",
         category: row[finalMapping.category] || "",
         brand: row[finalMapping.brand] || "",
         price: Number(row[finalMapping.price]) || 0,
         costPrice: Number(row[finalMapping.costPrice]) || 0,
+        discountPrice: row[finalMapping.discountPrice]
+          ? Number(row[finalMapping.discountPrice])
+          : undefined,
+        currency: row[finalMapping.currency] || "USD",
         stock: Number(row[finalMapping.stock]) || 0,
         soldUnits: Number(row[finalMapping.soldUnits]) || 0,
         rating: Number(row[finalMapping.rating]) || 0,
+        reviewCount: row[finalMapping.reviewCount]
+          ? Number(row[finalMapping.reviewCount])
+          : 0,
         region: row[finalMapping.region] || "",
+        images: row[finalMapping.images]
+          ? String(row[finalMapping.images])
+              .split(",")
+              .map((url) => url.trim())
+              .filter(Boolean)
+          : [],
         customFields: buildCustomFields(row),
       }));
     } else {
@@ -434,15 +449,21 @@ const UploadData = () => {
                         {fileType === "product" ? (
                           <>
                             <option value="productId">Product ID</option>
+                            <option value="sku">SKU</option>
                             <option value="productName">Product Name</option>
+                            <option value="description">Description</option>
                             <option value="category">Category</option>
                             <option value="brand">Brand</option>
                             <option value="price">Price</option>
                             <option value="costPrice">Cost Price</option>
+                            <option value="discountPrice">Discount Price</option>
+                            <option value="currency">Currency</option>
                             <option value="stock">Stock</option>
                             <option value="soldUnits">Sold Units</option>
                             <option value="rating">Rating</option>
+                            <option value="reviewCount">Review Count</option>
                             <option value="region">Region</option>
+                            <option value="images">Images</option>
                           </>
                         ) : (
                           <>
