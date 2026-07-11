@@ -1,6 +1,5 @@
 import Product from "./Product.js";
 import mongoose from "mongoose";
-import { createProductSchema } from "../validations/product.validation.js";
 
 // Bug fix: previously every query filtered by `uploadId: { $in: uploadIds }`,
 // where uploadIds only ever came from UploadHistory (i.e. CSV/Excel imports).
@@ -238,29 +237,6 @@ export const getPriceDistribution = async (req, res) => {
     res.json(data);
   } catch (error) {
     res.status(500).json({ message: error.message });
-  }
-};
-
-// POST /api/products
-export const createProduct = async (req, res) => {
-  try {
-    const validatedData = createProductSchema.parse(req.body);
-
-    const product = await Product.create({
-      ...validatedData,
-      userId: req.user.id,
-    });
-
-    res.status(201).json({
-      success: true,
-      product,
-    });
-  } catch (err) {
-    res.status(400).json({
-      success: false,
-      message: err.errors?.[0]?.message || "Validation failed",
-      errors: err.errors,
-    });
   }
 };
 
