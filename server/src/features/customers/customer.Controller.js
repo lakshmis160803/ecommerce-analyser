@@ -3,51 +3,84 @@ import Customer from "./Customer.js";
 import UploadHistory from "../imports/UploadHistory.js";
 import mongoose from "mongoose";
 
-const getUploadIds = async (range, userId) => {
-  const filter = {
-    uploadedBy: userId,
+// Bug fix: previously every query filtered by `uploadId: { $in: uploadIds }`,
+// where uploadIds came from a separate UploadHistory lookup (getUploadIds).
+// Any customer without a matching uploadId — or any case where the
+// UploadHistory lookup returned an empty list — silently disappeared from
+// every analytics endpoint. This mirrors the same bug (and the same fix)
+// already applied in product.Controller.js.
+//
+// Fix: filter directly on the customer's own `createdAt` (it already has
+// `timestamps: true`) instead of going through UploadHistory. This also
+// future-proofs a "manually add customer" feature, since manually created
+// customers won't have an uploadId either.
+const getDateFilter = (range) => {
+  const now = new Date();
+
+  switch (range) {
+    case "today":
+      return {
+        $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+      };
+
+    case "yesterday":
+      return {
+        $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1),
+        $lt: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+      };
+
+    case "7days":
+    case "last7days":
+      return {
+        $gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
+      };
+
+    case "30days":
+    case "last30days":
+      return {
+        $gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
+      };
+
+    case "90days":
+    case "last90days":
+      return {
+        $gte: new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000),
+      };
+
+    case "thisMonth":
+      return {
+        $gte: new Date(now.getFullYear(), now.getMonth(), 1),
+      };
+
+    case "lastMonth":
+      return {
+        $gte: new Date(now.getFullYear(), now.getMonth() - 1, 1),
+        $lt: new Date(now.getFullYear(), now.getMonth(), 1),
+      };
+
+    case "365days":
+    case "lastyear":
+      return {
+        $gte: new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()),
+      };
+
+    case "all":
+    default:
+      return null;
+  }
+};
+
+const buildMatch = (req) => {
+  const match = {
+    uploadedBy: new mongoose.Types.ObjectId(req.user.id),
   };
 
-  // Optional date range filtering
-  if (range && range !== "all") {
-    const now = new Date();
-    let from = new Date();
-
-    switch (range) {
-      case "7days":
-      case "last7days":
-        from.setDate(now.getDate() - 7);
-        break;
-
-      case "30days":
-      case "last30days":
-        from.setDate(now.getDate() - 30);
-        break;
-
-      case "90days":
-      case "last90days":
-        from.setDate(now.getDate() - 90);
-        break;
-
-      case "365days":
-      case "lastyear":
-        from.setFullYear(now.getFullYear() - 1);
-        break;
-
-      default:
-        from = null;
-    }
-
-    if (from) {
-      filter.createdAt = {
-        $gte: from,
-      };
-    }
+  const dateFilter = getDateFilter(req.query.range);
+  if (dateFilter) {
+    match.createdAt = dateFilter;
   }
 
-  const uploads = await UploadHistory.find(filter).select("_id");
-
-  return uploads.map((u) => u._id);
+  return match;
 };
 
 export const getUploads = async (req, res) => {
@@ -64,20 +97,15 @@ export const getUploads = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 // ===============================
 // Dashboard KPIs
 // ===============================
 export const getCustomerDashboard = async (req, res) => {
   try {
-  const uploadIds = await getUploadIds(
-  req.query.range,
-  req.user.id
-);
+    const match = buildMatch(req);
 
-const customers = await Customer.find({
-  uploadId: { $in: uploadIds },
-  uploadedBy: req.user.id,
-});
+    const customers = await Customer.find(match);
 
     const totalCustomers = customers.length;
 
@@ -91,10 +119,7 @@ const customers = await Customer.find({
 
     const averageSpend =
       totalCustomers > 0
-        ? customers.reduce(
-            (sum, c) => sum + c.totalSpent,
-            0
-          ) / totalCustomers
+        ? customers.reduce((sum, c) => sum + c.totalSpent, 0) / totalCustomers
         : 0;
 
     res.json({
@@ -103,30 +128,22 @@ const customers = await Customer.find({
       premiumCustomers,
       averageSpend,
     });
-
   } catch (err) {
     res.status(500).json({
       message: err.message,
     });
   }
 };
+
 // ===============================
 // Top Customers
 // ===============================
 export const getTopCustomers = async (req, res) => {
   try {
-   const uploadIds = await getUploadIds(
-  req.query.range,
-  req.user.id
-);
+    const match = buildMatch(req);
 
-const customers = await Customer.find({
-  uploadId: { $in: uploadIds },
-  uploadedBy: req.user.id,
-})
-      .sort({
-        totalSpent: -1,
-      })
+    const customers = await Customer.find(match)
+      .sort({ totalSpent: -1 })
       .limit(10);
 
     const data = customers.map((c) => ({
@@ -136,7 +153,6 @@ const customers = await Customer.find({
     }));
 
     res.json(data);
-
   } catch (err) {
     res.status(500).json({
       message: err.message,
@@ -146,35 +162,23 @@ const customers = await Customer.find({
 
 export const getCustomerGrowth = async (req, res) => {
   try {
-    const uploadIds = await getUploadIds(
-      req.query.range,
-      req.user.id
-    );
+    const match = {
+      ...buildMatch(req),
+      firstOrderDate: {
+        $exists: true,
+        $ne: null,
+      },
+    };
 
     const data = await Customer.aggregate([
-      {
-        $match: {
-          uploadId: { $in: uploadIds },
-          uploadedBy: new mongoose.Types.ObjectId(req.user.id),
-          firstOrderDate: {
-            $exists: true,
-            $ne: null,
-          },
-        },
-      },
+      { $match: match },
       {
         $group: {
           _id: {
-            year: {
-              $year: "$firstOrderDate",
-            },
-            month: {
-              $month: "$firstOrderDate",
-            },
+            year: { $year: "$firstOrderDate" },
+            month: { $month: "$firstOrderDate" },
           },
-          totalCustomers: {
-            $sum: 1,
-          },
+          totalCustomers: { $sum: 1 },
         },
       },
       {
@@ -208,17 +212,13 @@ export const getCustomerGrowth = async (req, res) => {
                 },
               },
               " ",
-              {
-                $toString: "$_id.year",
-              },
+              { $toString: "$_id.year" },
             ],
           },
           totalCustomers: 1,
         },
       },
     ]);
-
-    console.log("Customer Growth:", data);
 
     res.status(200).json(data);
   } catch (err) {
@@ -228,61 +228,37 @@ export const getCustomerGrowth = async (req, res) => {
     });
   }
 };
+
 export const getAllCustomers = async (req, res) => {
   try {
+    const match = buildMatch(req);
 
-   const uploadIds = await getUploadIds(
-  req.query.range,
-  req.user.id
-);
-
-const customers = await Customer.find({
-  uploadId: { $in: uploadIds },
-  uploadedBy: req.user.id,
-}).sort({
-      totalSpent: -1,
-    });
+    const customers = await Customer.find(match).sort({ totalSpent: -1 });
 
     res.json(customers);
-
   } catch (err) {
     res.status(500).json({
       message: err.message,
     });
   }
 };
+
 export const getCustomersByRegion = async (req, res) => {
   try {
-const uploadIds = await getUploadIds(
-  req.query.range,
-  req.user.id
-);
+    const match = buildMatch(req);
 
-const match = {
-  uploadId: { $in: uploadIds },
-  uploadedBy: req.user.id,
-};
     const data = await Customer.aggregate([
-  {
-    $match: match,
-  },
+      { $match: match },
       {
         $group: {
           _id: "$region",
-          value: {
-            $sum: 1,
-          },
+          value: { $sum: 1 },
         },
       },
-      {
-        $sort: {
-          value: -1,
-        },
-      },
+      { $sort: { value: -1 } },
     ]);
 
     res.json(data);
-
   } catch (err) {
     res.status(500).json({
       message: err.message,
@@ -290,18 +266,9 @@ const match = {
   }
 };
 
-
 export const getCustomerSegments = async (req, res) => {
   try {
-    const uploadIds = await getUploadIds(
-      req.query.range,
-      req.user.id
-    );
-
-    const match = {
-      uploadId: { $in: uploadIds },
-      uploadedBy: new mongoose.Types.ObjectId(req.user.id),
-    };
+    const match = buildMatch(req);
 
     const data = await Customer.aggregate([
       { $match: match },
@@ -319,8 +286,6 @@ export const getCustomerSegments = async (req, res) => {
         },
       },
     ]);
-
-    console.log(data);
 
     res.json(data);
   } catch (err) {
