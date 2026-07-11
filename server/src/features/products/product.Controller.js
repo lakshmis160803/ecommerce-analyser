@@ -63,6 +63,7 @@ const getDateFilter = (range) => {
 };
 
 const buildMatch = (req) => {
+   console.log("req.user.id used for match:", req.user.id);
   const match = {
     userId: new mongoose.Types.ObjectId(req.user.id),
   };
