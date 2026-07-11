@@ -1,92 +1,85 @@
 import Product from "./Product.js";
 import mongoose from "mongoose";
-import UploadHistory from "../imports/UploadHistory.js";
 import { createProductSchema } from "../validations/product.validation.js";
 
-const getProductUploadIds = async (range,userId) => {
-const filter = {
-  fileType: "product",
-};
-
-if (userId) {
-  filter.uploadedBy = userId;
-
-}
-
+// Bug fix: previously every query filtered by `uploadId: { $in: uploadIds }`,
+// where uploadIds only ever came from UploadHistory (i.e. CSV/Excel imports).
+// Manually created products never get an uploadId, so they silently failed
+// to match this filter and never appeared in any analysis endpoint.
+//
+// Fix: filter directly on the product's own `createdAt` (it already has
+// `timestamps: true`) instead of going through UploadHistory. This treats
+// manually added and bulk-uploaded products identically.
+const getDateFilter = (range) => {
   const now = new Date();
 
   switch (range) {
     case "today":
-      filter.createdAt = {
+      return {
         $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
       };
-      break;
 
     case "yesterday":
-      filter.createdAt = {
+      return {
         $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1),
         $lt: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
       };
-      break;
 
     case "last7days":
-      filter.createdAt = {
+      return {
         $gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
       };
-      break;
 
     case "last30days":
-      filter.createdAt = {
+      return {
         $gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
       };
-      break;
 
     case "thisMonth":
-      filter.createdAt = {
+      return {
         $gte: new Date(now.getFullYear(), now.getMonth(), 1),
       };
-      break;
 
     case "lastMonth":
-      filter.createdAt = {
+      return {
         $gte: new Date(now.getFullYear(), now.getMonth() - 1, 1),
         $lt: new Date(now.getFullYear(), now.getMonth(), 1),
       };
-      break;
 
     case "last3months":
-      filter.createdAt = {
+      return {
         $gte: new Date(now.getFullYear(), now.getMonth() - 3, now.getDate()),
       };
-      break;
 
     case "thisYear":
-      filter.createdAt = {
+      return {
         $gte: new Date(now.getFullYear(), 0, 1),
       };
-      break;
 
     case "all":
     default:
-      break;
+      return null;
+  }
+};
+
+const buildMatch = (req) => {
+  const match = {
+    userId: new mongoose.Types.ObjectId(req.user.id),
+  };
+
+  const dateFilter = getDateFilter(req.query.range);
+  if (dateFilter) {
+    match.createdAt = dateFilter;
   }
 
-  const uploads = await UploadHistory.find(filter).select("_id");
-
-  return uploads.map((u) => u._id);
+  return match;
 };
-// GET /api/products/top-products?uploadId=xxx
+
+// GET /api/products/top-products?range=xxx
 export const getTopProducts = async (req, res) => {
   try {
-   const uploadIds = await getProductUploadIds(
-  req.query.range,
-  req.user.id
-);
+    const match = buildMatch(req);
 
-const match = {
-  uploadId: { $in: uploadIds },
-  userId: new mongoose.Types.ObjectId(req.user.id),
-};
     const products = await Product.find(match)
       .sort({ soldUnits: -1 })
       .limit(10);
@@ -97,18 +90,11 @@ const match = {
   }
 };
 
-// GET /api/products/categories?uploadId=xxx
+// GET /api/products/categories?range=xxx
 export const getCategoryStats = async (req, res) => {
   try {
-  const uploadIds = await getProductUploadIds(
-  req.query.range,
-  req.user.id
-);
+    const match = buildMatch(req);
 
-const match = {
-  uploadId: { $in: uploadIds },
-  userId: new mongoose.Types.ObjectId(req.user.id),
-};
     const stats = await Product.aggregate([
       { $match: match },
       {
@@ -128,18 +114,11 @@ const match = {
   }
 };
 
-// GET /api/products/regions?uploadId=xxx
+// GET /api/products/regions?range=xxx
 export const getRegionRevenue = async (req, res) => {
   try {
-const uploadIds = await getProductUploadIds(
-  req.query.range,
-  req.user.id
-);
+    const match = buildMatch(req);
 
-const match = {
-  uploadId: { $in: uploadIds },
-  userId: new mongoose.Types.ObjectId(req.user.id),
-};
     const stats = await Product.aggregate([
       { $match: match },
       {
@@ -159,20 +138,10 @@ const match = {
   }
 };
 
-// GET /api/products/dashboard/:uploadId
+// GET /api/products/dashboard?range=xxx
 export const getDashboardStats = async (req, res) => {
   try {
-
-
- const uploadIds = await getProductUploadIds(
-  req.query.range,
-  req.user.id
-);
-
-const match = {
-  uploadId: { $in: uploadIds },
-  userId: new mongoose.Types.ObjectId(req.user.id),
-};
+    const match = buildMatch(req);
 
     const stats = await Product.aggregate([
       { $match: match },
@@ -209,15 +178,8 @@ const match = {
 
 export const getRatingDistribution = async (req, res) => {
   try {
-   const uploadIds = await getProductUploadIds(
-  req.query.range,
-  req.user.id
-);
+    const match = buildMatch(req);
 
-const match = {
-  uploadId: { $in: uploadIds },
-  userId: new mongoose.Types.ObjectId(req.user.id),
-};
     const ratings = await Product.aggregate([
       { $match: match },
       {
@@ -238,15 +200,8 @@ const match = {
 
 export const getCategoryDistribution = async (req, res) => {
   try {
- const uploadIds = await getProductUploadIds(
-  req.query.range,
-  req.user.id
-);
+    const match = buildMatch(req);
 
-const match = {
-  uploadId: { $in: uploadIds },
-  userId: new mongoose.Types.ObjectId(req.user.id),
-};
     const data = await Product.aggregate([
       { $match: match },
       {
@@ -265,15 +220,8 @@ const match = {
 
 export const getPriceDistribution = async (req, res) => {
   try {
-  const uploadIds = await getProductUploadIds(
-  req.query.range,
-  req.user.id
-);
+    const match = buildMatch(req);
 
-const match = {
-  uploadId: { $in: uploadIds },
-  userId: new mongoose.Types.ObjectId(req.user.id),
-};
     const data = await Product.aggregate([
       { $match: match },
       {
@@ -293,12 +241,9 @@ const match = {
 };
 
 // POST /api/products
-
 export const createProduct = async (req, res) => {
   try {
-
-    const validatedData =
-      createProductSchema.parse(req.body);
+    const validatedData = createProductSchema.parse(req.body);
 
     const product = await Product.create({
       ...validatedData,
@@ -309,28 +254,17 @@ export const createProduct = async (req, res) => {
       success: true,
       product,
     });
-
   } catch (err) {
-
     res.status(400).json({
       success: false,
       errors: err.errors,
     });
-
   }
 };
 
 export const getAllProducts = async (req, res) => {
   try {
-   const uploadIds = await getProductUploadIds(
-  req.query.range,
-  req.user.id
-);
-
-const match = {
-  uploadId: { $in: uploadIds },
-  userId: new mongoose.Types.ObjectId(req.user.id),
-};
+    const match = buildMatch(req);
 
     const products = await Product.find(match).sort({ soldUnits: -1 });
 
