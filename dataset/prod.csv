@@ -1,0 +1,16 @@
+product_id,sku,product_name,description,category,brand,price,cost_price,discount_price,currency,stock,sold_units,rating,review_count,region,images,warranty_months,return_policy
+P1001,SKU-AU-001,Wireless Over-Ear Headphones,Noise-cancelling wireless headphones with 30 hour battery life,Electronics,SoundWave,4999,3200,4499,INR,150,320,4.5,1240,North,https://example.com/img/headphones1.jpg,12,30-day return
+P1002,SKU-AU-002,True Wireless Earbuds,Compact earbuds with charging case and touch controls,Electronics,SoundWave,2499,1500,2199,INR,300,890,4.2,2100,South,https://example.com/img/earbuds1.jpg,6,15-day return
+P1003,SKU-KT-010,Stainless Steel Cookware Set,10-piece induction-safe cookware set,Home & Kitchen,ChefLine,7999,5200,,INR,80,150,4.6,410,West,https://example.com/img/cookware1.jpg,24,No returns on used items
+P1004,SKU-KT-011,Non-Stick Frying Pan,28cm non-stick frying pan with ergonomic handle,Home & Kitchen,ChefLine,899,450,799,INR,500,1200,4.3,860,East,https://example.com/img/pan1.jpg,,30-day return
+P1005,SKU-AP-101,Men's Running Shoes,Lightweight breathable running shoes,Apparel,StrideFit,2199,1100,1999,INR,220,675,4.1,530,North,https://example.com/img/shoes1.jpg,,60-day return
+P1006,SKU-AP-102,Women's Yoga Leggings,High-waist stretch leggings for workouts,Apparel,StrideFit,1299,600,,INR,400,980,4.4,720,South,https://example.com/img/leggings1.jpg,,30-day return
+P1007,SKU-EL-201,4K Smart LED TV 43 inch,Smart TV with built-in streaming apps,Electronics,VisionMax,28999,21000,26999,INR,60,95,4.0,310,West,https://example.com/img/tv1.jpg,24,7-day return
+P1008,SKU-EL-202,Bluetooth Portable Speaker,Waterproof speaker with 12 hour playtime,Electronics,SoundWave,1799,900,1599,INR,350,1450,4.5,1890,East,https://example.com/img/speaker1.jpg,12,30-day return
+P1009,SKU-BT-301,Herbal Face Wash 150ml,Gentle face wash for daily use,Beauty & Personal Care,GlowNatural,349,150,,INR,900,3200,4.2,2400,North,https://example.com/img/facewash1.jpg,,No returns
+P1010,SKU-BT-302,Organic Hair Oil 200ml,Nourishing hair oil with coconut and amla,Beauty & Personal Care,GlowNatural,449,200,399,INR,700,2650,4.6,3100,South,https://example.com/img/hairoil1.jpg,,No returns
+P1011,SKU-FN-401,3-Seater Fabric Sofa,Modern fabric sofa with wooden legs,Furniture,HomeCraft,18999,13000,,INR,25,40,4.3,95,West,https://example.com/img/sofa1.jpg,36,No returns
+P1012,SKU-FN-402,Study Table with Drawer,Compact wooden study table,Furniture,HomeCraft,4499,2800,3999,INR,90,210,4.1,180,East,https://example.com/img/table1.jpg,12,15-day return
+P1013,SKU-TY-501,Building Blocks Set 200pc,Educational building blocks for kids,Toys & Games,PlayJoy,1099,550,999,INR,260,540,4.7,680,North,https://example.com/img/blocks1.jpg,,30-day return
+P1014,SKU-TY-502,Remote Control Car,High-speed RC car with rechargeable battery,Toys & Games,PlayJoy,1599,850,,INR,180,410,4.0,290,South,https://example.com/img/rccar1.jpg,6,15-day return
+P1015,SKU-BK-601,Fiction Bestseller Novel,Paperback bestselling fiction novel,Books,PageTurner,399,180,349,INR,600,1900,4.5,2200,West,https://example.com/img/book1.jpg,,No returns
