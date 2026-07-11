@@ -62,22 +62,6 @@ const UploadData = () => {
     return finalMapping;
   };
 
-  // Bug fix: prevent two different columns silently overwriting the same
-  // target field (e.g. mapping both "Unit Price" and "MSRP" to "price").
-  const getDuplicateFieldMappings = () => {
-    const seen = {};
-    const duplicates = [];
-    Object.entries(unknownMapping).forEach(([column, field]) => {
-      if (field === "nullable") return;
-      if (seen[field]) {
-        duplicates.push(field);
-      } else {
-        seen[field] = column;
-      }
-    });
-    return duplicates;
-  };
-
   const buildPayload = (rows) => {
     const finalMapping = buildFinalMapping();
 
@@ -119,16 +103,6 @@ const UploadData = () => {
   };
 
   const uploadMappedData = async () => {
-    const duplicates = getDuplicateFieldMappings();
-    if (duplicates.length > 0) {
-      alert(
-        `Multiple columns are mapped to the same field: ${duplicates.join(
-          ", "
-        )}. Please fix before importing.`
-      );
-      return;
-    }
-
     try {
       setUploadStatus("uploading");
 
