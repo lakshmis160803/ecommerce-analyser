@@ -37,9 +37,6 @@ const EMPTY_PRODUCT = {
   region: "",
 };
 
-const PRODUCT_REQUIRED_FIELDS = ["productId", "productName"];
-const ORDER_REQUIRED_FIELDS = ["orderId", "productName"];
-
 const UploadData = () => {
   const { user } = useSelector((state) => state.auth);
   const isViewer = user?.role === "viewer";
@@ -79,15 +76,6 @@ const UploadData = () => {
       }
     });
     return duplicates;
-  };
-
-  // Bug fix: make sure the fields the backend actually needs are mapped
-  // to something before allowing import, instead of silently sending "".
-  const getMissingRequiredFields = () => {
-    const finalMapping = buildFinalMapping();
-    const required =
-      fileType === "product" ? PRODUCT_REQUIRED_FIELDS : ORDER_REQUIRED_FIELDS;
-    return required.filter((field) => !finalMapping[field]);
   };
 
   const buildPayload = (rows) => {
@@ -137,16 +125,6 @@ const UploadData = () => {
         `Multiple columns are mapped to the same field: ${duplicates.join(
           ", "
         )}. Please fix before importing.`
-      );
-      return;
-    }
-
-    const missing = getMissingRequiredFields();
-    if (missing.length > 0) {
-      alert(
-        `The following required fields are not mapped: ${missing.join(
-          ", "
-        )}. Please map them before importing.`
       );
       return;
     }
