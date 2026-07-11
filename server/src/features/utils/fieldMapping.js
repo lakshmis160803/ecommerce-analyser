@@ -7,12 +7,19 @@ export const FIELD_ALIASES = {
     // camelCase
     "productid", "itemid", "itemcode",
     // short
-    "sku", "code", "id", "pid", "prod_id",
+    "code", "id", "pid", "prod_id",
     // misc
     "product_code", "article_number", "article_no",
     "ref", "reference", "ref_no", "ref_code",
     "barcode", "upc", "isbn", "asin",
     "number", "no", "serial", "serial_no",
+    // NOTE: "sku" removed — it now has its own dedicated field below.
+  ],
+
+  sku: [
+    "sku", "sku_code", "sku_id",
+    "product_sku", "item_sku",
+    "stock_keeping_unit",
   ],
 
   productName: [
@@ -24,8 +31,18 @@ export const FIELD_ALIASES = {
     "name", "title", "product", "item",
     // misc
     "product_title", "item_title", "goods_name",
-    "description", "desc", "label",
+    "label",
     "model", "model_name", "model_no",
+    // NOTE: "description"/"desc" removed — now mapped to the
+    // dedicated `description` field below.
+  ],
+
+  description: [
+    "description", "desc",
+    "product_description", "item_description",
+    "details", "product_details",
+    "long_description", "short_description",
+    "product_information", "summary",
   ],
 
   category: [
@@ -66,6 +83,20 @@ export const FIELD_ALIASES = {
     "base_price", "original_price",
   ],
 
+  discountPrice: [
+    "discount_price", "discounted_price",
+    "discountprice", "discountedprice",
+    "offer_price", "offerprice",
+    "special_price", "specialprice",
+    "sale_discount_price", "final_price",
+    "promo_price",
+  ],
+
+  currency: [
+    "currency", "currency_code",
+    "curr", "currencycode",
+  ],
+
   stock: [
     "stock", "stock_quantity", "available_stock",
     "qty_available", "qty_on_hand",
@@ -96,6 +127,13 @@ export const FIELD_ALIASES = {
     "ratings", "feedback_score",
   ],
 
+  reviewCount: [
+    "review_count", "reviewcount",
+    "num_reviews", "number_of_reviews",
+    "total_reviews", "reviews_count",
+    "no_of_reviews",
+  ],
+
   region: [
     "region", "region_name",
     "location", "loc",
@@ -106,6 +144,16 @@ export const FIELD_ALIASES = {
     "warehouse", "store",
     "branch", "division",
     "sales_region", "sales_area",
+  ],
+
+  images: [
+    "image", "images",
+    "image_url", "imageurl",
+    "img", "img_url",
+    "photo", "photos",
+    "picture", "pictures",
+    "product_image", "product_images",
+    "thumbnail",
   ],
 
 };
