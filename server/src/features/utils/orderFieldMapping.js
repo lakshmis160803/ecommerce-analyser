@@ -1,52 +1,88 @@
+// ✅ Single, merged order alias map (superset of both earlier versions)
 export const ORDER_FIELD_ALIASES = {
+
   orderId: [
-    "order_id",
-    "orderid",
-    "order_no",
-    "order_number",
+    "order_id", "orderid", "order_no", "orderno",
+    "order_number", "ordernumber",
+    "order_code", "ordercode",
+    "id", "transaction_id", "transactionid",
+    "invoice_id", "invoice_no", "invoiceno",
+    "receipt_id", "receipt_no",
   ],
 
   customerName: [
-    "customer_name",
-    "customername",
-    "customer_id",
-    "customerid",
+    "customer_id", "customerid",
+    "customer_name", "customername",
+    "client_name", "clientname",
+    "buyer_name", "buyername",
+    "customer", "client", "buyer",
+    "name", "full_name", "fullname",
+    "user_name", "username",
+    "billing_name", "shipping_name",
   ],
 
   productName: [
-    "product_name",
-    "productname",
+    "product_name", "productname",
+    "item_name", "itemname",
+    "product", "item",
+    "title", "description", "desc",
+    "goods_name", "model", "model_name",
   ],
 
   quantity: [
-    "quantity",
-    "qty",
+    "quantity", "qty",
+    "order_quantity", "orderquantity",
+    "units", "units_ordered", "unitsordered",
+    "no_of_units", "num_units",
+    "count", "order_qty",
   ],
 
   price: [
-    "price",
-    "amount",
+    "price", "unit_price", "unitprice",
+    "selling_price", "sellingprice",
+    "sale_price", "saleprice",
+    "amount", "rate", "value",
+    "total_price", "totalprice",
     "total_amount",
+    "order_amount", "order_value",
+    "line_total", "subtotal",
   ],
 
   region: [
-    "region",
-    "location",
+    "region", "region_name",
+    "location", "loc",
+    "area", "zone",
+    "territory", "market",
+    "state", "city", "country",
+    "geography", "geo",
+    "warehouse", "store",
+    "branch", "division",
+    "sales_region", "sales_area",
+    "shipping_region", "delivery_region",
   ],
 
   orderDate: [
-    "order_date",
-    "orderdate",
-    "date",
+    "order_date", "orderdate",
+    "date", "purchase_date", "purchasedate",
+    "transaction_date", "transactiondate",
+    "invoice_date", "invoicedate",
+    "created_at", "createdat",
+    "order_time", "ordertime",
+    "timestamp",
   ],
+
 };
 
-
+// ✅ Key normalizer — lowercases and collapses spaces/dashes/dots to underscores
 export const normalizeOrderKey = (key) =>
   key.toLowerCase().replace(/[\s\-\.]+/g, "_");
 
+// ✅ Maps a raw row's headers onto the ORDER_FIELD_ALIASES schema.
+// Returns { mapping, unknownColumns }.
+//   mapping.orderId       -> the actual column name in `row` matched to orderId (or null)
+//   unknownColumns        -> columns in `row` that didn't match any schema field
 export const autoMapOrderFields = (row) => {
-  if (!row) return {};
+  if (!row) return { mapping: {}, unknownColumns: [] };
 
   console.log("📋 ORDER RAW HEADERS:", Object.keys(row));
 
@@ -69,34 +105,32 @@ export const autoMapOrderFields = (row) => {
     }
   });
 
-  return mapped;
-};
+  const mappedColumns = Object.values(mapped).filter(Boolean);
 
-export const detectFileType = (row) => {
-  const headers = Object.keys(row).map((k) =>
-    k.toLowerCase().replace(/[\s\-\.]+/g, "_")
+  const unknownColumns = Object.keys(row).filter(
+    (column) => !mappedColumns.includes(column)
   );
 
-  const orderSignals = [
-    "order_id", "orderid", "order_no", "order_number",
-    "order_date", "orderdate", "customer_name", "customername",
-    "transaction_id", "invoice_id", "invoice_no",
-  ];
+  return {
+    mapping: mapped,
+    unknownColumns,
+  };
+};
 
-  const productSignals = [
-    "product_id", "productid", "sku", "brand",
-    "product_name", "productname", "cost_price",
-    "stock", "sold_units", "soldunits",
-  ];
+// ✅ Applies the mapping to pull actual values out of a raw row,
+// so callers don't have to do row[mapping.orderId] everywhere themselves.
+export const extractOrderFromRow = (row) => {
+  const { mapping, unknownColumns } = autoMapOrderFields(row);
 
-  const orderScore = headers.filter((h) => orderSignals.includes(h)).length;
-  const productScore = headers.filter((h) => productSignals.includes(h)).length;
+  const order = {
+    orderId: mapping.orderId ? row[mapping.orderId] : null,
+    customerName: mapping.customerName ? row[mapping.customerName] : "",
+    productName: mapping.productName ? row[mapping.productName] : "",
+    quantity: mapping.quantity ? Number(row[mapping.quantity]) || 0 : 0,
+    price: mapping.price ? Number(row[mapping.price]) || 0 : 0,
+    region: mapping.region ? row[mapping.region] : "",
+    orderDate: mapping.orderDate ? row[mapping.orderDate] : null,
+  };
 
-  console.log(`🔍 Detection — order score: ${orderScore}, product score: ${productScore}`);
-
-  if (orderScore > productScore) return "order";
-  if (productScore > orderScore) return "product";
-
-  if (headers.some((h) => h.includes("order") || h.includes("customer"))) return "order";
-  return "product";
+  return { order, mapping, unknownColumns };
 };

@@ -12,6 +12,8 @@ import customerRoutes from "./src/features/customers/customer.Routes.js"
 import regionalRoutes from "./src/features/regional/regional.Routes.js"
 import inventoryRoutes from "./src/features/inventory/inventory.routes.js"
 import reportRoutes from "./src/features/reports/report.routes.js"
+
+
 dotenv.config();
 console.log("FRONTEND_URL =", process.env.FRONTEND_URL);
 connectDB();
@@ -19,12 +21,12 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
   process.env.FRONTEND_URL,
-].filter(Boolean); // drops undefined if env var isn't set
+].filter(Boolean); 
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // allow requests with no origin (e.g. curl, mobile apps, server-to-server)
+   
       if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {
@@ -64,6 +66,7 @@ app.use("/api/customers",customerRoutes)
 app.use("/api/regional",regionalRoutes)
 app.use("/api/inventory",inventoryRoutes)
 app.use("/api/reports",reportRoutes)
+
 app.get("/", (req, res) => {
   res.send("API Running");
 });

@@ -2,18 +2,13 @@
 export const FIELD_ALIASES = {
 
   productId: [
-    // snake_case
     "product_id", "item_id", "item_code",
-    // camelCase
     "productid", "itemid", "itemcode",
-    // short
     "code", "id", "pid", "prod_id",
-    // misc
     "product_code", "article_number", "article_no",
     "ref", "reference", "ref_no", "ref_code",
     "barcode", "upc", "isbn", "asin",
     "number", "no", "serial", "serial_no",
-    // NOTE: "sku" removed — it now has its own dedicated field below.
   ],
 
   sku: [
@@ -23,18 +18,11 @@ export const FIELD_ALIASES = {
   ],
 
   productName: [
-    // snake_case
     "product_name", "item_name", "prod_name",
-    // camelCase
     "productname", "itemname", "prodname",
-    // short
     "name", "title", "product", "item",
-    // misc
     "product_title", "item_title", "goods_name",
-    "label",
     "model", "model_name", "model_no",
-    // NOTE: "description"/"desc" removed — now mapped to the
-    // dedicated `description` field below.
   ],
 
   description: [
@@ -158,11 +146,11 @@ export const FIELD_ALIASES = {
 
 };
 
-// ✅ Alias map for order files
+// ✅ Single, merged order alias map (superset of both earlier versions)
 export const ORDER_FIELD_ALIASES = {
 
   orderId: [
-    "order_id", "orderid", "order_no", "orderno","orderid",
+    "order_id", "orderid", "order_no", "orderno",
     "order_number", "ordernumber",
     "order_code", "ordercode",
     "id", "transaction_id", "transactionid",
@@ -171,7 +159,7 @@ export const ORDER_FIELD_ALIASES = {
   ],
 
   customerName: [
-    "customer_id","customerid",
+    "customer_id", "customerid",
     "customer_name", "customername",
     "client_name", "clientname",
     "buyer_name", "buyername",
@@ -203,6 +191,7 @@ export const ORDER_FIELD_ALIASES = {
     "sale_price", "saleprice",
     "amount", "rate", "value",
     "total_price", "totalprice",
+    "total_amount",
     "order_amount", "order_value",
     "line_total", "subtotal",
   ],
@@ -232,6 +221,7 @@ export const ORDER_FIELD_ALIASES = {
 
 };
 
+// ✅ Single shared key normalizer (used by both product & order mapping)
 export const normalizeKey = (key) =>
   key.toLowerCase().replace(/[\s\-\.]+/g, "_");
 
@@ -259,19 +249,22 @@ export const autoMapFields = (row) => {
     }
   });
 
- const mappedColumns = Object.values(mapped).filter(Boolean);
+  const mappedColumns = Object.values(mapped).filter(Boolean);
 
-const unknownColumns = Object.keys(row).filter(
-  (column) => !mappedColumns.includes(column)
-);
+  const unknownColumns = Object.keys(row).filter(
+    (column) => !mappedColumns.includes(column)
+  );
 
-return {
-  mapping: mapped,
-  unknownColumns,
-};
+  return {
+    mapping: mapped,
+    unknownColumns,
+  };
 };
 
 // ✅ Same mapping strategy, but against the order alias list
+// NOTE: returns { mapping, unknownColumns } — same shape as autoMapFields.
+// If your existing code called autoMapOrderFields(row).orderId directly,
+// change it to autoMapOrderFields(row).mapping.orderId.
 export const autoMapOrderFields = (row) => {
   if (!row) return {};
 
@@ -290,23 +283,23 @@ export const autoMapOrderFields = (row) => {
     mapped[schemaField] = matchedColumn || null;
 
     if (!matchedColumn) {
-      console.warn(`⚠️  No match for "${schemaField}" — column will default to 0 or ""`);
+      console.warn(`⚠️  No match for order field "${schemaField}"`);
     } else {
       console.log(`✅ "${schemaField}" → "${matchedColumn}"`);
     }
   });
-const mappedColumns = Object.values(mapped).filter(Boolean);
 
-const unknownColumns = Object.keys(row).filter(
-  (column) => !mappedColumns.includes(column)
-);
+  const mappedColumns = Object.values(mapped).filter(Boolean);
 
-return {
-  mapping: mapped,
-  unknownColumns,
+  const unknownColumns = Object.keys(row).filter(
+    (column) => !mappedColumns.includes(column)
+  );
+
+  return {
+    mapping: mapped,
+    unknownColumns,
+  };
 };
-};
-
 
 export const detectFileType = (row) => {
   if (!row) return "product";
@@ -315,48 +308,23 @@ export const detectFileType = (row) => {
 
   const countMatches = (aliasMap) =>
     Object.values(aliasMap).reduce((count, aliasList) => {
-      const hasMatch = headers.some((header) =>
-        aliasList.includes(header)
-      );
+      const hasMatch = headers.some((header) => aliasList.includes(header));
       return hasMatch ? count + 1 : count;
     }, 0);
 
-  const orderScore =
-    countMatches(ORDER_FIELD_ALIASES);
+  const orderScore = countMatches(ORDER_FIELD_ALIASES);
+  const productScore = countMatches(FIELD_ALIASES);
 
-  const productScore =
-    countMatches(FIELD_ALIASES);
+  console.log("🔍 detectFileType", { orderScore, productScore });
 
-  console.log(
-    "🔍 detectFileType",
-    { orderScore, productScore }
-  );
+  // Strong order indicators — these short-circuit to "order" even on a tie
+  const hasOrderId = headers.some((h) => ORDER_FIELD_ALIASES.orderId.includes(h));
+  const hasCustomer = headers.some((h) => ORDER_FIELD_ALIASES.customerName.includes(h));
+  const hasOrderDate = headers.some((h) => ORDER_FIELD_ALIASES.orderDate.includes(h));
 
-  // Strong order indicators
-  const hasOrderId =
-    headers.some((h) =>
-      ORDER_FIELD_ALIASES.orderId.includes(h)
-    );
-
-  const hasCustomer =
-    headers.some((h) =>
-      ORDER_FIELD_ALIASES.customerName.includes(h)
-    );
-
-  const hasOrderDate =
-    headers.some((h) =>
-      ORDER_FIELD_ALIASES.orderDate.includes(h)
-    );
-
-  if (
-    hasOrderId ||
-    hasCustomer ||
-    hasOrderDate
-  ) {
+  if (hasOrderId || hasCustomer || hasOrderDate) {
     return "order";
   }
 
-  return orderScore > productScore
-    ? "order"
-    : "product";
+  return orderScore > productScore ? "order" : "product";
 };

@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Product from "../products/Product.js";
 import UploadHistory from "../imports/UploadHistory.js";
 
+
 const getProductUploadIds = async (range, userId) => {
   const filter = {
     fileType: "product",
