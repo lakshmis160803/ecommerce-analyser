@@ -12,6 +12,7 @@ import customerRoutes from "./src/features/customers/customer.Routes.js"
 import regionalRoutes from "./src/features/regional/regional.Routes.js"
 import inventoryRoutes from "./src/features/inventory/inventory.routes.js"
 import reportRoutes from "./src/features/reports/report.routes.js"
+import notificationRoutes from "./features/notifications/notificationRoutes.js";
 import  errorHandler from "./src/middleware/errorMiddleware.js"
 
 
@@ -67,6 +68,7 @@ app.use("/api/customers",customerRoutes)
 app.use("/api/regional",regionalRoutes)
 app.use("/api/inventory",inventoryRoutes)
 app.use("/api/reports",reportRoutes)
+app.use("/api/notifications", notificationRoutes);
 app.get("/", (req, res) => {
   res.send("API Running");
 });
