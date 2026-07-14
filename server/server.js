@@ -12,7 +12,7 @@ import customerRoutes from "./src/features/customers/customer.Routes.js"
 import regionalRoutes from "./src/features/regional/regional.Routes.js"
 import inventoryRoutes from "./src/features/inventory/inventory.routes.js"
 import reportRoutes from "./src/features/reports/report.routes.js"
-import notificationRoutes from "./features/notifications/notificationRoutes.js";
+import notificationRoutes from "./src/features/notifications/notificationRoutes.js"; // fixed: was missing "src/"
 import  errorHandler from "./src/middleware/errorMiddleware.js"
 
 
