@@ -1,5 +1,5 @@
 productId,productName,category,brand,price,costPrice,stock,soldUnits,rating,region
-P1001,Wireless Earbuds Pro,Electronics,SoundWave,2499,1500,120,340,4.5,North
+P1001,Wireless Earbuds Pro,Electronics,SoundWave,2499,1500,10,340,4.5,North
 P1002,Smart Watch X1,Electronics,Pulse,5999,3800,80,210,4.2,South
 P1003,Gaming Mouse RGB,Accessories,ClickTech,1299,700,200,580,4.6,West
 P1004,Mechanical Keyboard,Accessories,ClickTech,3499,2100,90,260,4.4,North
