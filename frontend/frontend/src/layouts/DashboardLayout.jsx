@@ -6,7 +6,6 @@ const DashboardLayout = () => {
   return (
 <div className="flex flex-col lg:flex-row">
   <Sidebar />
-  {/* Adding lg: ensures the padding ONLY applies on desktop screens */}
   <main className="flex-1 pt-20 lg:pt-8 p-4 md:p-8 lg:pl-8"> 
     <Outlet />
   </main>

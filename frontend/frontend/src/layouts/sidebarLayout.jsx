@@ -27,7 +27,7 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* 1. Mobile Top Navbar containing the Hamburger Icon */}
+      
       <div className="lg:hidden fixed top-0 left-0 w-full bg-white h-16 px-6 border-b border-gray-100 flex items-center justify-between z-40 shadow-sm">
         <h2 className="text-xl font-bold text-violet-600">
           Ecom Intelligence
@@ -44,7 +44,7 @@ const Sidebar = () => {
         </button>
       </div>
 
-      {/* 2. Dark Tinted Backdrop Overlay (Closes menu when clicked outside) */}
+      
       {isOpen && (
         <div 
           onClick={() => setIsOpen(false)}

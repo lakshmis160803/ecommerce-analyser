@@ -29,6 +29,7 @@ import {
 import {
   BsCartCheckFill,
 } from "react-icons/bs";
+
 const COLORS = [
   "#7c3aed",
   "#22c55e",
