@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import Product from "../products/Product.js";
 import UploadHistory from "../imports/UploadHistory.js";
-import asyncHandler from "../middleware/asyncHandler.js"; // adjust path to match your project
+import asyncHandler from "../../middleware/asyncHandler.js"; // adjust path to match your project
 
 const getProductUploadIds = async (range, userId) => {
   const filter = {

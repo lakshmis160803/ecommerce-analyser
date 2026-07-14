@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import { Parser } from "json2csv";
 import ExcelJS from "exceljs";
 import Order from "../orders/Order.js";
-import asyncHandler from "../middleware/asyncHandler.js"; // adjust path to match your project
+import asyncHandler from "../../middleware/asyncHandler.js"; // adjust path to match your project
 
 const getProductMatch = (userId, uploadId) => {
   const match = {

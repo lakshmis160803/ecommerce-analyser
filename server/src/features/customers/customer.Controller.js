@@ -2,7 +2,7 @@ import Order from "../orders/Order.js";
 import Customer from "./Customer.js";
 import UploadHistory from "../imports/UploadHistory.js";
 import mongoose from "mongoose";
-import asyncHandler from "../middleware/asyncHandler.js"; // adjust path to match your project
+import asyncHandler from "../../middleware/asyncHandler.js"; // adjust path to match your project
 
 const getDateFilter = (range) => {
   const now = new Date();

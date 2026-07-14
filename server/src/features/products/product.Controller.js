@@ -1,6 +1,6 @@
 import Product from "./Product.js";
 import mongoose from "mongoose";
-import asyncHandler from "../../utils/asyncHandler.js";
+import asyncHandler from "../../middleware/asyncHandler.js";
 
 const getDateFilter = (range) => {
   const now = new Date();

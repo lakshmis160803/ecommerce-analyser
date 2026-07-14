@@ -2,7 +2,7 @@ import express from "express";
 import { addClient, removeClient } from "./notificationManager.js";
 // This route MUST be protected, since req.user.id is what scopes each
 // client's notification stream to the correct user.
-import { protect } from "../../middleware/authMiddleware.js"; // fixed: was "../middleware/..."
+import  protect  from "../../middleware/authMiddleware.js"; // fixed: was "../middleware/..."
 
 const router = express.Router();
 

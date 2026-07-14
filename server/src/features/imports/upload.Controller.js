@@ -2,7 +2,7 @@ import Product from "../products/Product.js";
 import UploadHistory from "./UploadHistory.js";
 import Customer from "../customers/Customer.js";
 import mongoose from "mongoose";
-import asyncHandler from "../middleware/asyncHandler.js"; // adjust path to match your project
+import asyncHandler from "../../middleware/asyncHandler.js"
 import { sendToUser } from "../notifications/notificationManager.js"; // adjust path to match your project
 
 const LOW_STOCK_THRESHOLD = 20;

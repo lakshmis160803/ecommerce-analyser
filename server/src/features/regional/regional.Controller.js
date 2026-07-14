@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import Order from "../orders/Order.js";
-import asyncHandler from "../../utils/asyncHandler.js";
+import asyncHandler from "../../middleware/asyncHandler.js";
 
 const buildMatch = (req) => ({
   userId: new mongoose.Types.ObjectId(req.user.id),
