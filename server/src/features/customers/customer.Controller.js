@@ -2,18 +2,8 @@ import Order from "../orders/Order.js";
 import Customer from "./Customer.js";
 import UploadHistory from "../imports/UploadHistory.js";
 import mongoose from "mongoose";
+import asyncHandler from "../middleware/asyncHandler.js"; // adjust path to match your project
 
-// Bug fix: previously every query filtered by `uploadId: { $in: uploadIds }`,
-// where uploadIds came from a separate UploadHistory lookup (getUploadIds).
-// Any customer without a matching uploadId — or any case where the
-// UploadHistory lookup returned an empty list — silently disappeared from
-// every analytics endpoint. This mirrors the same bug (and the same fix)
-// already applied in product.Controller.js.
-//
-// Fix: filter directly on the customer's own `createdAt` (it already has
-// `timestamps: true`) instead of going through UploadHistory. This also
-// future-proofs a "manually add customer" feature, since manually created
-// customers won't have an uploadId either.
 const getDateFilter = (range) => {
   const now = new Date();
 
@@ -83,213 +73,170 @@ const buildMatch = (req) => {
   return match;
 };
 
-export const getUploads = async (req, res) => {
-  try {
-    const { fileType } = req.query;
+export const getUploads = asyncHandler(async (req, res) => {
+  const { fileType } = req.query;
 
-    const filter = { uploadedBy: req.user.id };
-    if (fileType) filter.fileType = fileType;
+  const filter = { uploadedBy: req.user.id };
+  if (fileType) filter.fileType = fileType;
 
-    const uploads = await UploadHistory.find(filter).sort({ createdAt: -1 });
-    res.status(200).json({ success: true, data: uploads });
-  } catch (error) {
-    console.error("getUploads error:", error);
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
+  const uploads = await UploadHistory.find(filter).sort({ createdAt: -1 });
+  res.status(200).json({ success: true, data: uploads });
+});
 
 // ===============================
 // Dashboard KPIs
 // ===============================
-export const getCustomerDashboard = async (req, res) => {
-  try {
-    const match = buildMatch(req);
+export const getCustomerDashboard = asyncHandler(async (req, res) => {
+  const match = buildMatch(req);
 
-    const customers = await Customer.find(match);
+  const customers = await Customer.find(match);
 
-    const totalCustomers = customers.length;
+  const totalCustomers = customers.length;
 
-    const repeatCustomers = customers.filter(
-      (c) => c.totalOrders > 1
-    ).length;
+  const repeatCustomers = customers.filter((c) => c.totalOrders > 1).length;
 
-    const premiumCustomers = customers.filter(
-      (c) => c.customerType === "Premium"
-    ).length;
+  const premiumCustomers = customers.filter(
+    (c) => c.customerType === "Premium"
+  ).length;
 
-    const averageSpend =
-      totalCustomers > 0
-        ? customers.reduce((sum, c) => sum + c.totalSpent, 0) / totalCustomers
-        : 0;
+  const averageSpend =
+    totalCustomers > 0
+      ? customers.reduce((sum, c) => sum + c.totalSpent, 0) / totalCustomers
+      : 0;
 
-    res.json({
-      totalCustomers,
-      repeatCustomers,
-      premiumCustomers,
-      averageSpend,
-    });
-  } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
-  }
-};
+  res.json({
+    totalCustomers,
+    repeatCustomers,
+    premiumCustomers,
+    averageSpend,
+  });
+});
 
 // ===============================
 // Top Customers
 // ===============================
-export const getTopCustomers = async (req, res) => {
-  try {
-    const match = buildMatch(req);
+export const getTopCustomers = asyncHandler(async (req, res) => {
+  const match = buildMatch(req);
 
-    const customers = await Customer.find(match)
-      .sort({ totalSpent: -1 })
-      .limit(10);
+  const customers = await Customer.find(match)
+    .sort({ totalSpent: -1 })
+    .limit(10);
 
-    const data = customers.map((c) => ({
-      _id: c.customerName,
-      revenue: c.totalSpent,
-      orders: c.totalOrders,
-    }));
+  const data = customers.map((c) => ({
+    _id: c.customerName,
+    revenue: c.totalSpent,
+    orders: c.totalOrders,
+  }));
 
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
-  }
-};
+  res.json(data);
+});
 
-export const getCustomerGrowth = async (req, res) => {
-  try {
-    const match = {
-      ...buildMatch(req),
-      firstOrderDate: {
-        $exists: true,
-        $ne: null,
-      },
-    };
+export const getCustomerGrowth = asyncHandler(async (req, res) => {
+  const match = {
+    ...buildMatch(req),
+    firstOrderDate: {
+      $exists: true,
+      $ne: null,
+    },
+  };
 
-    const data = await Customer.aggregate([
-      { $match: match },
-      {
-        $group: {
-          _id: {
-            year: { $year: "$firstOrderDate" },
-            month: { $month: "$firstOrderDate" },
-          },
-          totalCustomers: { $sum: 1 },
+  const data = await Customer.aggregate([
+    { $match: match },
+    {
+      $group: {
+        _id: {
+          year: { $year: "$firstOrderDate" },
+          month: { $month: "$firstOrderDate" },
         },
+        totalCustomers: { $sum: 1 },
       },
-      {
-        $sort: {
-          "_id.year": 1,
-          "_id.month": 1,
-        },
+    },
+    {
+      $sort: {
+        "_id.year": 1,
+        "_id.month": 1,
       },
-      {
-        $project: {
-          _id: 0,
-          month: {
-            $concat: [
-              {
-                $switch: {
-                  branches: [
-                    { case: { $eq: ["$_id.month", 1] }, then: "Jan" },
-                    { case: { $eq: ["$_id.month", 2] }, then: "Feb" },
-                    { case: { $eq: ["$_id.month", 3] }, then: "Mar" },
-                    { case: { $eq: ["$_id.month", 4] }, then: "Apr" },
-                    { case: { $eq: ["$_id.month", 5] }, then: "May" },
-                    { case: { $eq: ["$_id.month", 6] }, then: "Jun" },
-                    { case: { $eq: ["$_id.month", 7] }, then: "Jul" },
-                    { case: { $eq: ["$_id.month", 8] }, then: "Aug" },
-                    { case: { $eq: ["$_id.month", 9] }, then: "Sep" },
-                    { case: { $eq: ["$_id.month", 10] }, then: "Oct" },
-                    { case: { $eq: ["$_id.month", 11] }, then: "Nov" },
-                    { case: { $eq: ["$_id.month", 12] }, then: "Dec" },
-                  ],
-                  default: "",
-                },
+    },
+    {
+      $project: {
+        _id: 0,
+        month: {
+          $concat: [
+            {
+              $switch: {
+                branches: [
+                  { case: { $eq: ["$_id.month", 1] }, then: "Jan" },
+                  { case: { $eq: ["$_id.month", 2] }, then: "Feb" },
+                  { case: { $eq: ["$_id.month", 3] }, then: "Mar" },
+                  { case: { $eq: ["$_id.month", 4] }, then: "Apr" },
+                  { case: { $eq: ["$_id.month", 5] }, then: "May" },
+                  { case: { $eq: ["$_id.month", 6] }, then: "Jun" },
+                  { case: { $eq: ["$_id.month", 7] }, then: "Jul" },
+                  { case: { $eq: ["$_id.month", 8] }, then: "Aug" },
+                  { case: { $eq: ["$_id.month", 9] }, then: "Sep" },
+                  { case: { $eq: ["$_id.month", 10] }, then: "Oct" },
+                  { case: { $eq: ["$_id.month", 11] }, then: "Nov" },
+                  { case: { $eq: ["$_id.month", 12] }, then: "Dec" },
+                ],
+                default: "",
               },
-              " ",
-              { $toString: "$_id.year" },
-            ],
-          },
-          totalCustomers: 1,
+            },
+            " ",
+            { $toString: "$_id.year" },
+          ],
         },
+        totalCustomers: 1,
       },
-    ]);
+    },
+  ]);
 
-    res.status(200).json(data);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      message: err.message,
-    });
-  }
-};
+  res.status(200).json(data);
+});
 
-export const getAllCustomers = async (req, res) => {
-  try {
-    const match = buildMatch(req);
+export const getAllCustomers = asyncHandler(async (req, res) => {
+  const match = buildMatch(req);
 
-    const customers = await Customer.find(match).sort({ totalSpent: -1 });
+  const customers = await Customer.find(match).sort({ totalSpent: -1 });
 
-    res.json(customers);
-  } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
-  }
-};
+  res.json(customers);
+});
 
-export const getCustomersByRegion = async (req, res) => {
-  try {
-    const match = buildMatch(req);
+export const getCustomersByRegion = asyncHandler(async (req, res) => {
+  const match = buildMatch(req);
 
-    const data = await Customer.aggregate([
-      { $match: match },
-      {
-        $group: {
-          _id: "$region",
-          value: { $sum: 1 },
-        },
+  const data = await Customer.aggregate([
+    { $match: match },
+    {
+      $group: {
+        _id: "$region",
+        value: { $sum: 1 },
       },
-      { $sort: { value: -1 } },
-    ]);
+    },
+    { $sort: { value: -1 } },
+  ]);
 
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
-  }
-};
+  res.json(data);
+});
 
-export const getCustomerSegments = async (req, res) => {
-  try {
-    const match = buildMatch(req);
+export const getCustomerSegments = asyncHandler(async (req, res) => {
+  const match = buildMatch(req);
 
-    const data = await Customer.aggregate([
-      { $match: match },
-      {
-        $group: {
-          _id: "$customerType",
-          value: { $sum: 1 },
-        },
+  const data = await Customer.aggregate([
+    { $match: match },
+    {
+      $group: {
+        _id: "$customerType",
+        value: { $sum: 1 },
       },
-      {
-        $project: {
-          _id: 0,
-          name: "$_id",
-          value: 1,
-        },
+    },
+    {
+      $project: {
+        _id: 0,
+        name: "$_id",
+        value: 1,
       },
-    ]);
+    },
+  ]);
 
-    res.json(data);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: err.message });
-  }
-};
+  res.json(data);
+});

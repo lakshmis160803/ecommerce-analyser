@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import Product from "../products/Product.js";
 import UploadHistory from "../imports/UploadHistory.js";
-
+import asyncHandler from "../middleware/asyncHandler.js"; // adjust path to match your project
 
 const getProductUploadIds = async (range, userId) => {
   const filter = {
@@ -68,128 +68,119 @@ const getProductUploadIds = async (range, userId) => {
   return uploads.map((u) => u._id);
 };
 
-export const getInventoryDashboard = async (req, res) => {
-  try {
-    const uploadIds = await getProductUploadIds(
-      req.query.range,
-      req.user.id
-    );
+export const getInventoryDashboard = asyncHandler(async (req, res) => {
+  const uploadIds = await getProductUploadIds(req.query.range, req.user.id);
 
-    const match = {
-      uploadId: { $in: uploadIds },
-      userId: new mongoose.Types.ObjectId(req.user.id),
-    };
+  const match = {
+    uploadId: { $in: uploadIds },
+    userId: new mongoose.Types.ObjectId(req.user.id),
+  };
 
-    const summary = await Product.aggregate([
-      { $match: match },
-      {
-        $group: {
-          _id: null,
-          totalProducts: { $sum: 1 },
-          totalStock: { $sum: "$stock" },
-          inventoryValue: {
-            $sum: {
-              $multiply: ["$stock", "$costPrice"],
-            },
+  const summary = await Product.aggregate([
+    { $match: match },
+    {
+      $group: {
+        _id: null,
+        totalProducts: { $sum: 1 },
+        totalStock: { $sum: "$stock" },
+        inventoryValue: {
+          $sum: {
+            $multiply: ["$stock", "$costPrice"],
           },
         },
       },
-    ]);
+    },
+  ]);
 
-   const lowStock = await Product.find({
-  stock: {
-    $gt: 0,
-    $lt: 20,
-  },
+  // NOTE: this previously queried Product.find with only { stock: { $gt: 0, $lt: 20 } }
+  // and no `match` (userId/uploadId) filter, which leaked low-stock products
+  // belonging to every user. Fixed to scope to the current user/upload range.
+  const lowStock = await Product.find({
+    ...match,
+    stock: {
+      $gt: 0,
+      $lt: 20,
+    },
+  });
+
+  const outOfStock = await Product.find({
+    ...match,
+    stock: 0,
+  });
+
+  const fastMoving = await Product.find(match)
+    .sort({ soldUnits: -1 })
+    .limit(10);
+
+  const slowMoving = await Product.find(match)
+    .sort({ soldUnits: 1 })
+    .limit(10);
+
+  const inventoryByCategory = await Product.aggregate([
+    { $match: match },
+    {
+      $group: {
+        _id: "$category",
+        stock: {
+          $sum: "$stock",
+        },
+        value: {
+          $sum: {
+            $multiply: ["$stock", "$costPrice"],
+          },
+        },
+      },
+    },
+    {
+      $sort: {
+        stock: -1,
+      },
+    },
+  ]);
+
+  const stockStatus = await Product.aggregate([
+    { $match: match },
+    {
+      $project: {
+        status: {
+          $switch: {
+            branches: [
+              {
+                case: { $eq: ["$stock", 0] },
+                then: "Out Of Stock",
+              },
+              {
+                case: { $lt: ["$stock", 20] },
+                then: "Low Stock",
+              },
+            ],
+            default: "Healthy",
+          },
+        },
+      },
+    },
+    {
+      $group: {
+        _id: "$status",
+        count: {
+          $sum: 1,
+        },
+      },
+    },
+  ]);
+
+  res.status(200).json({
+    totalProducts: summary[0]?.totalProducts || 0,
+    totalStock: summary[0]?.totalStock || 0,
+    inventoryValue: summary[0]?.inventoryValue || 0,
+
+    lowStock,
+    outOfStock,
+
+    fastMoving,
+    slowMoving,
+
+    inventoryByCategory,
+    stockStatus,
+  });
 });
-
-console.log(lowStock);
-
-    const outOfStock = await Product.find({
-      ...match,
-      stock: 0,
-    });
-
-    const fastMoving = await Product.find(match)
-      .sort({ soldUnits: -1 })
-      .limit(10);
-
-    const slowMoving = await Product.find(match)
-      .sort({ soldUnits: 1 })
-      .limit(10);
-
-    const inventoryByCategory = await Product.aggregate([
-      { $match: match },
-      {
-        $group: {
-          _id: "$category",
-          stock: {
-            $sum: "$stock",
-          },
-          value: {
-            $sum: {
-              $multiply: ["$stock", "$costPrice"],
-            },
-          },
-        },
-      },
-      {
-        $sort: {
-          stock: -1,
-        },
-      },
-    ]);
-
-    const stockStatus = await Product.aggregate([
-      { $match: match },
-      {
-        $project: {
-          status: {
-            $switch: {
-              branches: [
-                {
-                  case: { $eq: ["$stock", 0] },
-                  then: "Out Of Stock",
-                },
-                {
-                  case: { $lt: ["$stock", 20] },
-                  then: "Low Stock",
-                },
-              ],
-              default: "Healthy",
-            },
-          },
-        },
-      },
-      {
-        $group: {
-          _id: "$status",
-          count: {
-            $sum: 1,
-          },
-        },
-      },
-    ]);
-
-    res.status(200).json({
-      totalProducts: summary[0]?.totalProducts || 0,
-      totalStock: summary[0]?.totalStock || 0,
-      inventoryValue: summary[0]?.inventoryValue || 0,
-
-      lowStock,
-      outOfStock,
-
-      fastMoving,
-      slowMoving,
-
-      inventoryByCategory,
-      stockStatus,
-    });
-  } catch (err) {
-    console.error(err);
-
-    res.status(500).json({
-      message: err.message,
-    });
-  }
-};

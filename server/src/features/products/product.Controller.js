@@ -1,5 +1,6 @@
 import Product from "./Product.js";
 import mongoose from "mongoose";
+import asyncHandler from "../../utils/asyncHandler.js";
 
 const getDateFilter = (range) => {
   const now = new Date();
@@ -39,7 +40,11 @@ const getDateFilter = (range) => {
 
     case "last3months":
       return {
-        $gte: new Date(now.getFullYear(), now.getMonth() - 3, now.getDate()),
+        $gte: new Date(
+          now.getFullYear(),
+          now.getMonth() - 3,
+          now.getDate()
+        ),
       };
 
     case "thisYear":
@@ -54,12 +59,14 @@ const getDateFilter = (range) => {
 };
 
 const buildMatch = (req) => {
-   console.log("req.user.id used for match:", req.user.id);
+  console.log("req.user.id used for match:", req.user.id);
+
   const match = {
     userId: new mongoose.Types.ObjectId(req.user.id),
   };
 
   const dateFilter = getDateFilter(req.query.range);
+
   if (dateFilter) {
     match.createdAt = dateFilter;
   }
@@ -68,178 +75,159 @@ const buildMatch = (req) => {
 };
 
 // GET /api/products/top-products?range=xxx
-export const getTopProducts = async (req, res) => {
-  try {
-    const match = buildMatch(req);
+export const getTopProducts = asyncHandler(async (req, res) => {
+  const match = buildMatch(req);
 
-    const products = await Product.find(match)
-      .sort({ soldUnits: -1 })
-      .limit(10);
+  const products = await Product.find(match)
+    .sort({ soldUnits: -1 })
+    .limit(10);
 
-    res.status(200).json(products);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+  res.status(200).json(products);
+});
 
 // GET /api/products/categories?range=xxx
-export const getCategoryStats = async (req, res) => {
-  try {
-    const match = buildMatch(req);
+export const getCategoryStats = asyncHandler(async (req, res) => {
+  const match = buildMatch(req);
 
-    const stats = await Product.aggregate([
-      { $match: match },
-      {
-        $group: {
-          _id: "$category",
-          count: { $sum: 1 },
-          totalSold: { $sum: "$soldUnits" },
-          totalRevenue: { $sum: { $multiply: ["$price", "$soldUnits"] } },
+  const stats = await Product.aggregate([
+    { $match: match },
+    {
+      $group: {
+        _id: "$category",
+        count: { $sum: 1 },
+        totalSold: { $sum: "$soldUnits" },
+        totalRevenue: {
+          $sum: { $multiply: ["$price", "$soldUnits"] },
         },
       },
-      { $sort: { count: -1 } },
-    ]);
+    },
+    { $sort: { count: -1 } },
+  ]);
 
-    res.status(200).json(stats);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+  res.status(200).json(stats);
+});
 
 // GET /api/products/regions?range=xxx
-export const getRegionRevenue = async (req, res) => {
-  try {
-    const match = buildMatch(req);
+export const getRegionRevenue = asyncHandler(async (req, res) => {
+  const match = buildMatch(req);
 
-    const stats = await Product.aggregate([
-      { $match: match },
-      {
-        $group: {
-          _id: "$region",
-          revenue: { $sum: { $multiply: ["$price", "$soldUnits"] } },
-          soldUnits: { $sum: "$soldUnits" },
-          totalStock: { $sum: "$stock" },
+  const stats = await Product.aggregate([
+    { $match: match },
+    {
+      $group: {
+        _id: "$region",
+        revenue: {
+          $sum: { $multiply: ["$price", "$soldUnits"] },
         },
+        soldUnits: { $sum: "$soldUnits" },
+        totalStock: { $sum: "$stock" },
       },
-      { $sort: { revenue: -1 } },
-    ]);
+    },
+    { $sort: { revenue: -1 } },
+  ]);
 
-    res.status(200).json(stats);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+  res.status(200).json(stats);
+});
 
 // GET /api/products/dashboard?range=xxx
-export const getDashboardStats = async (req, res) => {
-  try {
-    const match = buildMatch(req);
+export const getDashboardStats = asyncHandler(async (req, res) => {
+  const match = buildMatch(req);
 
-    const stats = await Product.aggregate([
-      { $match: match },
-      {
-        $group: {
-          _id: null,
-          totalProducts: { $sum: 1 },
-          totalRevenue: { $sum: { $multiply: ["$price", "$soldUnits"] } },
-          totalStock: { $sum: "$stock" },
-          totalSoldUnits: { $sum: "$soldUnits" },
-          avgRating: { $avg: "$rating" },
+  const stats = await Product.aggregate([
+    { $match: match },
+    {
+      $group: {
+        _id: null,
+        totalProducts: { $sum: 1 },
+        totalRevenue: {
+          $sum: { $multiply: ["$price", "$soldUnits"] },
         },
+        totalStock: { $sum: "$stock" },
+        totalSoldUnits: { $sum: "$soldUnits" },
+        avgRating: { $avg: "$rating" },
       },
-    ]);
+    },
+  ]);
 
-    if (!stats.length) {
-      return res.status(200).json({
-        totalProducts: 0,
-        totalRevenue: 0,
-        totalStock: 0,
-        totalSoldUnits: 0,
-        avgRating: 0,
-      });
-    }
-
-    const { _id, ...result } = stats[0];
-
-    res.status(200).json(result);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: error.message });
+  if (!stats.length) {
+    return res.status(200).json({
+      totalProducts: 0,
+      totalRevenue: 0,
+      totalStock: 0,
+      totalSoldUnits: 0,
+      avgRating: 0,
+    });
   }
-};
 
-export const getRatingDistribution = async (req, res) => {
-  try {
-    const match = buildMatch(req);
+  const { _id, ...result } = stats[0];
 
-    const ratings = await Product.aggregate([
-      { $match: match },
-      {
-        $bucket: {
-          groupBy: "$rating",
-          boundaries: [0, 1, 2, 3, 4, 5],
-          default: "Other",
-          output: { count: { $sum: 1 } },
-        },
-      },
-    ]);
+  res.status(200).json(result);
+});
 
-    res.status(200).json(ratings);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+// GET /api/products/ratings?range=xxx
+export const getRatingDistribution = asyncHandler(async (req, res) => {
+  const match = buildMatch(req);
 
-export const getCategoryDistribution = async (req, res) => {
-  try {
-    const match = buildMatch(req);
-
-    const data = await Product.aggregate([
-      { $match: match },
-      {
-        $group: {
-          _id: "$category",
+  const ratings = await Product.aggregate([
+    { $match: match },
+    {
+      $bucket: {
+        groupBy: "$rating",
+        boundaries: [0, 1, 2, 3, 4, 5],
+        default: "Other",
+        output: {
           count: { $sum: 1 },
         },
       },
-    ]);
+    },
+  ]);
 
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+  res.status(200).json(ratings);
+});
 
-export const getPriceDistribution = async (req, res) => {
-  try {
-    const match = buildMatch(req);
+// GET /api/products/category-distribution?range=xxx
+export const getCategoryDistribution = asyncHandler(async (req, res) => {
+  const match = buildMatch(req);
 
-    const data = await Product.aggregate([
-      { $match: match },
-      {
-        $project: {
-          _id: 0,
-          productName: 1,
-          price: 1,
-        },
+  const data = await Product.aggregate([
+    { $match: match },
+    {
+      $group: {
+        _id: "$category",
+        count: { $sum: 1 },
       },
-      { $sort: { price: 1 } },
-    ]);
+    },
+  ]);
 
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+  res.status(200).json(data);
+});
 
-export const getAllProducts = async (req, res) => {
-  try {
-    const match = buildMatch(req);
+// GET /api/products/price-distribution?range=xxx
+export const getPriceDistribution = asyncHandler(async (req, res) => {
+  const match = buildMatch(req);
 
-    const products = await Product.find(match).sort({ soldUnits: -1 });
+  const data = await Product.aggregate([
+    { $match: match },
+    {
+      $project: {
+        _id: 0,
+        productName: 1,
+        price: 1,
+      },
+    },
+    { $sort: { price: 1 } },
+  ]);
 
-    res.json(products);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+  res.status(200).json(data);
+});
+
+// GET /api/products
+export const getAllProducts = asyncHandler(async (req, res) => {
+  const match = buildMatch(req);
+
+  const products = await Product.find(match).sort({
+    soldUnits: -1,
+  });
+
+  res.status(200).json(products);
+});

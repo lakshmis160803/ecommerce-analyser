@@ -73,14 +73,10 @@ export const ORDER_FIELD_ALIASES = {
 
 };
 
-// ✅ Key normalizer — lowercases and collapses spaces/dashes/dots to underscores
 export const normalizeOrderKey = (key) =>
   key.toLowerCase().replace(/[\s\-\.]+/g, "_");
 
-// ✅ Maps a raw row's headers onto the ORDER_FIELD_ALIASES schema.
-// Returns { mapping, unknownColumns }.
-//   mapping.orderId       -> the actual column name in `row` matched to orderId (or null)
-//   unknownColumns        -> columns in `row` that didn't match any schema field
+
 export const autoMapOrderFields = (row) => {
   if (!row) return { mapping: {}, unknownColumns: [] };
 
@@ -117,8 +113,6 @@ export const autoMapOrderFields = (row) => {
   };
 };
 
-// ✅ Applies the mapping to pull actual values out of a raw row,
-// so callers don't have to do row[mapping.orderId] everywhere themselves.
 export const extractOrderFromRow = (row) => {
   const { mapping, unknownColumns } = autoMapOrderFields(row);
 

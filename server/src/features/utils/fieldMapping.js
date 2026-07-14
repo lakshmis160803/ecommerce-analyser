@@ -146,7 +146,6 @@ export const FIELD_ALIASES = {
 
 };
 
-// ✅ Single, merged order alias map (superset of both earlier versions)
 export const ORDER_FIELD_ALIASES = {
 
   orderId: [
@@ -261,10 +260,6 @@ export const autoMapFields = (row) => {
   };
 };
 
-// ✅ Same mapping strategy, but against the order alias list
-// NOTE: returns { mapping, unknownColumns } — same shape as autoMapFields.
-// If your existing code called autoMapOrderFields(row).orderId directly,
-// change it to autoMapOrderFields(row).mapping.orderId.
 export const autoMapOrderFields = (row) => {
   if (!row) return {};
 
@@ -316,8 +311,6 @@ export const detectFileType = (row) => {
   const productScore = countMatches(FIELD_ALIASES);
 
   console.log("🔍 detectFileType", { orderScore, productScore });
-
-  // Strong order indicators — these short-circuit to "order" even on a tie
   const hasOrderId = headers.some((h) => ORDER_FIELD_ALIASES.orderId.includes(h));
   const hasCustomer = headers.some((h) => ORDER_FIELD_ALIASES.customerName.includes(h));
   const hasOrderDate = headers.some((h) => ORDER_FIELD_ALIASES.orderDate.includes(h));

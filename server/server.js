@@ -12,6 +12,7 @@ import customerRoutes from "./src/features/customers/customer.Routes.js"
 import regionalRoutes from "./src/features/regional/regional.Routes.js"
 import inventoryRoutes from "./src/features/inventory/inventory.routes.js"
 import reportRoutes from "./src/features/reports/report.routes.js"
+import  errorHandler from "./src/middleware/errorMiddleware.js"
 
 
 dotenv.config();
@@ -66,7 +67,6 @@ app.use("/api/customers",customerRoutes)
 app.use("/api/regional",regionalRoutes)
 app.use("/api/inventory",inventoryRoutes)
 app.use("/api/reports",reportRoutes)
-
 app.get("/", (req, res) => {
   res.send("API Running");
 });
@@ -78,6 +78,7 @@ app.get("/cookie-test", (req, res) => {
   });
   res.send("cookie set");
 });
+app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on ${PORT}`);
