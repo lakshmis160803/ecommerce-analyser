@@ -5,7 +5,7 @@ import {
   logoutUser,
   getMe,
   refreshAccessToken,
-  forgotPassword,
+  changePasswordDirect,
   resetPassword,
   googleAuth,
 } from "./auth.Controller.js";
@@ -17,7 +17,7 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/logout", logoutUser);
 router.post("/refresh", refreshAccessToken);
-router.post("/forgot-password", forgotPassword);
+router.post("/change-password", changePasswordDirect);
 router.post("/reset-password/:token", resetPassword);
 router.post("/google", googleAuth);
 

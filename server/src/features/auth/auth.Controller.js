@@ -237,17 +237,32 @@ export const refreshAccessToken = (req, res) => {
   }
 };
 
-// FORGOT PASSWORD - request reset link
-export const forgotPassword = async (req, res) => {
+
+// CHANGE PASSWORD DIRECTLY - no email link, set new password immediately
+export const changePasswordDirect = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, newPassword } = req.body;
+
+    if (!email || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and new password are required",
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters",
+      });
+    }
 
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(200).json({
-        success: true,
-        message: "If that email exists, a reset link has been sent",
+      return res.status(404).json({
+        success: false,
+        message: "No account found with that email",
       });
     }
 
@@ -258,29 +273,12 @@ export const forgotPassword = async (req, res) => {
       });
     }
 
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
-
-    user.resetPasswordToken = hashedToken;
-    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 minutes
+    user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
-
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-
-    await sendEmail({
-      to: user.email,
-      subject: "Password Reset Request",
-      html: `
-        <p>Hi ${user.name},</p>
-        <p>You requested a password reset. Click the link below to set a new password. This link expires in 15 minutes.</p>
-        <a href="${resetUrl}">${resetUrl}</a>
-        <p>If you didn't request this, you can safely ignore this email.</p>
-      `,
-    });
 
     return res.status(200).json({
       success: true,
-      message: "If that email exists, a reset link has been sent",
+      message: "Password updated successfully. Please log in.",
     });
   } catch (error) {
     console.log(error);
