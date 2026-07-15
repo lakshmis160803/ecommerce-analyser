@@ -1,21 +1,18 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
-import { login } from "../store/authSlice";
+import { login, googleLogin } from "../store/authSlice";
 import { toast } from "react-toastify";
 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const googleButtonRef = useRef(null);
 
+  const { isAuthenticated, loading, error } = useSelector((state) => state.auth);
 
-  const { isAuthenticated, loading, error } =
-    useSelector((state) => state.auth);
-
-  const [showPassword, setShowPassword] =
-    useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -29,34 +26,52 @@ const Login = () => {
     }
   }, [isAuthenticated, navigate]);
 
+  // Render Google Sign-In button
+  useEffect(() => {
+    if (window.google && googleButtonRef.current) {
+      window.google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        callback: (response) => {
+          dispatch(googleLogin(response.credential))
+            .unwrap()
+            .then(() => toast.success("Login successful!"))
+            .catch((err) => toast.error(err || "Google sign-in failed"));
+        },
+      });
+
+      window.google.accounts.id.renderButton(googleButtonRef.current, {
+        theme: "outline",
+        size: "large",
+        width: 320,
+        text: "continue_with",
+      });
+    }
+  }, [dispatch]);
+
   const handleChange = (e) => {
-    const { name, value, type, checked } =
-      e.target;
+    const { name, value, type, checked } = e.target;
 
     setFormData({
       ...formData,
-      [name]:
-        type === "checkbox"
-          ? checked
-          : value,
+      [name]: type === "checkbox" ? checked : value,
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-  try {
-  await dispatch(
-    login({
-      email: formData.email,
-      password: formData.password,
-    })
-  ).unwrap();
+    try {
+      await dispatch(
+        login({
+          email: formData.email,
+          password: formData.password,
+        })
+      ).unwrap();
 
-  toast.success("Login successful!");
-} catch (err) {
-  toast.error(err || "Invalid email or password");
-}
+      toast.success("Login successful!");
+    } catch (err) {
+      toast.error(err || "Invalid email or password");
+    }
   };
 
   return (
@@ -70,24 +85,17 @@ const Login = () => {
 
           <h2 className="text-3xl font-bold">
             Ecom
-            <span className="text-violet-600">
-              Intelligence
-            </span>
+            <span className="text-violet-600">Intelligence</span>
           </h2>
         </div>
 
-        <h1 className="text-6xl font-bold text-slate-900 mb-3">
-          Welcome back
-        </h1>
+        <h1 className="text-6xl font-bold text-slate-900 mb-3">Welcome back</h1>
 
         <p className="text-slate-500 text-xl mb-10">
           Sign in to your analytics dashboard
         </p>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6"
-        >
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block mb-2 font-medium text-slate-700">
               Email Address
@@ -105,20 +113,19 @@ const Login = () => {
 
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="font-medium text-slate-700">
-                Password
-              </label>
+              <label className="font-medium text-slate-700">Password</label>
 
-
+              <Link
+                to="/forgot-password"
+                className="text-sm text-violet-600 font-medium hover:underline"
+              >
+                Forgot Password?
+              </Link>
             </div>
 
             <div className="relative">
               <input
-                type={
-                  showPassword
-                    ? "text"
-                    : "password"
-                }
+                type={showPassword ? "text" : "password"}
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
@@ -128,41 +135,31 @@ const Login = () => {
 
               <button
                 type="button"
-                onClick={() =>
-                  setShowPassword(
-                    !showPassword
-                  )
-                }
+                onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-4 top-5 text-slate-500"
               >
-                {showPassword ? (
-                  <FiEyeOff size={20} />
-                ) : (
-                  <FiEye size={20} />
-                )}
+                {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
               </button>
             </div>
           </div>
-
 
           <button
             type="submit"
             disabled={loading}
             className="w-full bg-gradient-to-r from-violet-600 to-purple-600 text-white py-4 rounded-2xl font-semibold shadow-lg"
           >
-            {loading
-              ? "Signing In..."
-              : "Sign In →"}
+            {loading ? "Signing In..." : "Sign In →"}
           </button>
         </form>
 
         <div className="flex items-center my-8">
           <div className="flex-1 border-t"></div>
-          <span className="px-4 text-slate-400">
-            or
-          </span>
+          <span className="px-4 text-slate-400">or</span>
           <div className="flex-1 border-t"></div>
         </div>
+
+        {/* Google Sign-In button */}
+        <div ref={googleButtonRef} className="flex justify-center mb-6"></div>
 
         <div className="text-center">
           <Link
@@ -176,14 +173,10 @@ const Login = () => {
         <p className="text-center text-slate-500 mt-6">
           New to Ecom Intelligence?
         </p>
-
-
       </div>
-
 
       {/* RIGHT */}
       <div className="hidden lg:flex lg:w-1/2 bg-[#0F0B1F] flex-col justify-center px-20 relative overflow-hidden">
-        {/* Ambient glow */}
         <div className="absolute -top-32 -right-32 w-96 h-96 bg-violet-600 rounded-full blur-3xl opacity-30"></div>
         <div className="absolute bottom-0 left-0 w-72 h-72 bg-fuchsia-500 rounded-full blur-3xl opacity-20"></div>
 
@@ -201,7 +194,6 @@ const Login = () => {
             Real-time dashboards, predictive analytics and AI recommendations in one place.
           </p>
 
-          {/* Mini live dashboard mockup */}
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl">
             <div className="flex justify-between items-center mb-6">
               <span className="text-slate-300 text-sm font-medium">Revenue — This Month</span>
@@ -212,7 +204,6 @@ const Login = () => {
 
             <div className="text-4xl font-bold text-white mb-6">₹5,75,900</div>
 
-            {/* Animated bar chart */}
             <div className="flex items-end gap-2 h-28">
               {[40, 65, 50, 80, 60, 95, 75].map((h, i) => (
                 <div
@@ -232,7 +223,6 @@ const Login = () => {
             </div>
           </div>
 
-          {/* Floating stat chips */}
           <div className="flex gap-4 mt-6">
             <div className="bg-white/5 border border-white/10 rounded-2xl px-5 py-3 flex-1">
               <p className="text-slate-400 text-xs mb-1">Orders</p>
@@ -249,4 +239,4 @@ const Login = () => {
   );
 };
 
-export default Login;  
+export default Login;

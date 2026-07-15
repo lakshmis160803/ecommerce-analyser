@@ -2,6 +2,8 @@ import { Routes, Route } from "react-router-dom";
 import Login from "../features/auth/pages/Login";
 import Dashboard from "../features/dashboard/Dashboard";
 import SignUp from "../features/auth/pages/Signup";
+import ForgotPassword from "../features/auth/pages/ForgotPassword";
+import ResetPassword from "../features/auth/pages/ResetPassword";
 import UploadData from "../features/imports/pages/UploadData";
 import ProtectedRoute from "./ProtectedRoute";
 import ProductAnalysis from "../features/analytics/pages/ProductAnalysis";
@@ -13,15 +15,14 @@ import RegionalAnalysis from "../features/analytics/pages/regionalAnalysis";
 import InventoryAnalysis from "../features/analytics/pages/InventoryAnalysis";
 import Reports from "../features/reports/pages/Reports";
 import NotFound from "../features/notfound/NotFound";
+
 const AppRoutes = () => {
   return (
     <Routes>
-
       <Route path="/" element={<Login />} />
-      <Route
-        path="/signup"
-        element={<SignUp />}
-      />
+      <Route path="/signup" element={<SignUp />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
 
       <Route
         element={
@@ -30,54 +31,18 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
-
-        <Route
-          path="/dashboard"
-          element={<Dashboard />}
-        />
-
-        <Route
-          path="/upload"
-          element={<UploadData />}
-        />
-
-        <Route
-          path="/products"
-          element={<ProductAnalysis />}
-        />
-
-        <Route
-          path="/orders"
-          element={<OrderAnalytics />}
-        />
-
-        <Route
-          element={<UserManagement />}
-          path="/users"
-        />
-
-        <Route
-          path="/customers"
-          element={<CustomerAnalysis />}
-        />
-        <Route
-          path="/regional"
-          element={<RegionalAnalysis />}
-        />
-        <Route
-          path="/inventory"
-          element={<InventoryAnalysis />}
-        />
-<Route
-  path="/reports"
-  element={<Reports />}
-/>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/upload" element={<UploadData />} />
+        <Route path="/products" element={<ProductAnalysis />} />
+        <Route path="/orders" element={<OrderAnalytics />} />
+        <Route element={<UserManagement />} path="/users" />
+        <Route path="/customers" element={<CustomerAnalysis />} />
+        <Route path="/regional" element={<RegionalAnalysis />} />
+        <Route path="/inventory" element={<InventoryAnalysis />} />
+        <Route path="/reports" element={<Reports />} />
       </Route>
 
-      <Route
-        path="*"
-        element={<NotFound />}
-      />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
