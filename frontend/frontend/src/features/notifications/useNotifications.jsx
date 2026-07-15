@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function useNotifications() {
   const [notifications, setNotifications] = useState([]);
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    const source = new EventSource(`${API_URL}/api/notifications/stream`, {
+    const source = new EventSource(`${API_URL}/notifications/stream`, {
       withCredentials: true,
     });
 
