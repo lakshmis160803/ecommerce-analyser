@@ -14,13 +14,13 @@ axiosInstance.interceptors.response.use(
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      !originalRequest.url.includes("/auth/refresh")
+      !originalRequest.url.includes("/api/auth/refresh")
     ) {
       originalRequest._retry = true;
 
       try {
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/auth/refresh`,
+          `${import.meta.env.VITE_API_URL}/api/auth/refresh`, // fixed: added "/api"
           {},
           {
             withCredentials: true,
