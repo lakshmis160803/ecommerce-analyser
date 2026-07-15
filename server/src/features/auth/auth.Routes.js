@@ -4,9 +4,11 @@ import {
   loginUser,
   logoutUser,
   getMe,
-   refreshAccessToken
+  refreshAccessToken,
+  forgotPassword,
+  resetPassword,
+  googleAuth,
 } from "./auth.Controller.js";
-
 
 const router = express.Router();
 
@@ -15,5 +17,8 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/logout", logoutUser);
 router.post("/refresh", refreshAccessToken);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password/:token", resetPassword);
+router.post("/google", googleAuth);
 
-export default router;     
+export default router;

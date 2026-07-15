@@ -15,12 +15,26 @@ const userSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: true,
+      required: function () {
+        // Not required for Google-only accounts
+        return this.authProvider === "local";
+      },
+    },
+
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
+
+    googleId: {
+      type: String,
+      default: null,
     },
 
     role: {
       type: String,
-      enum: ["superadmin", "admin","viewer"],
+      enum: ["superadmin", "admin", "viewer"],
       default: "viewer",
     },
 
@@ -28,6 +42,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["active", "inactive"],
       default: "active",
+    },
+
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+
+    resetPasswordExpire: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }
