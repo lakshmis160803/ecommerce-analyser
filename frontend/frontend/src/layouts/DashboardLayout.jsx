@@ -1,11 +1,8 @@
-import { Outlet } from "react-router-dom";
-import Sidebar from "./sidebarLayout";
 import useNotifications from "../features/notifications/useNotifications";
 import NotificationBell from "../features/notifications/NotificationBell";
 
 const DashboardLayout = () => {
   const { notifications, connected } = useNotifications();
-
   return (
     <div className="flex flex-col lg:flex-row">
       <Sidebar />

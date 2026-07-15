@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { fetchUser } from "./features/auth/store/authSlice";
 import AppRoutes from "./routes/AppRoutes";
-import { NotificationProvider } from "./context/NotificationContext";
 
 function App() {
   const dispatch = useDispatch();
@@ -11,11 +10,7 @@ function App() {
     dispatch(fetchUser());
   }, [dispatch]);
 
-  return (
-    <NotificationProvider>
-      <AppRoutes />
-    </NotificationProvider>
-  );
+  return <AppRoutes />;
 }
 
 export default App;

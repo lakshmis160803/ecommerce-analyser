@@ -1,8 +1,6 @@
 import { useState } from "react";
-import { useNotifications } from "../context/NotificationContext";
 
-const NotificationBell = () => {
-  const { notifications, connected } = useNotifications();
+const NotificationBell = ({ notifications, connected }) => {
   const [open, setOpen] = useState(false);
   const unreadCount = notifications.length;
 
