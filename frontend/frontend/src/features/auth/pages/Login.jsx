@@ -91,7 +91,7 @@ const Login = () => {
       <div className="w-full lg:w-1/2 bg-white flex flex-col justify-center px-6 sm:px-10 lg:px-20 py-10">
         <div className="flex items-center gap-3 mb-10">
           <div className="w-12 h-12 bg-violet-600 rounded-xl flex items-center justify-center text-white text-xl">
-            📊
+           <img src="/logoEcom.png" alt="logo" />
           </div>
 
           <h2 className="text-3xl font-bold">
