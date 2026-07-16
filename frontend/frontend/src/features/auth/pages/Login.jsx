@@ -4,13 +4,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { login, googleLogin } from "../store/authSlice";
 import { toast } from "react-toastify";
-import { FcGoogle } from "react-icons/fc"; // npm install react-icons if not already
+import { FcGoogle } from "react-icons/fc";
 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const googleButtonRef = useRef(null); // hidden real Google button
-  const hiddenGoogleBtnWrapperRef = useRef(null);
+  const googleButtonRef = useRef(null);
 
   const { isAuthenticated, loading, error } = useSelector((state) => state.auth);
 
@@ -28,61 +27,37 @@ const Login = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  // Initialize Google Sign-In and render the REAL button hidden
- // Initialize Google Sign-In and render the REAL button hidden
-useEffect(() => {
-  let intervalId;
+  // Initialize Google Sign-In and render the REAL button (invisible, stacked on top of custom UI)
+  useEffect(() => {
+    let intervalId;
 
-  const tryInitGoogle = () => {
-    if (window.google && googleButtonRef.current) {
-      window.google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-        callback: (response) => {
-          dispatch(googleLogin(response.credential))
-            .unwrap()
-            .then(() => toast.success("Login successful!"))
-            .catch((err) => toast.error(err || "Google sign-in failed"));
-        },
-      });
+    const tryInitGoogle = () => {
+      if (window.google && googleButtonRef.current) {
+        window.google.accounts.id.initialize({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+          callback: (response) => {
+            dispatch(googleLogin(response.credential))
+              .unwrap()
+              .then(() => toast.success("Login successful!"))
+              .catch((err) => toast.error(err || "Google sign-in failed"));
+          },
+        });
 
-      window.google.accounts.id.renderButton(googleButtonRef.current, {
-        theme: "outline",
-        size: "large",
-        width: 320,
-      });
+        window.google.accounts.id.renderButton(googleButtonRef.current, {
+          theme: "outline",
+          size: "large",
+          width: 320,
+        });
 
-      clearInterval(intervalId);
-    }
-  };
-
-  // Try immediately, then retry every 300ms until Google's script loads
-  tryInitGoogle();
-  intervalId = setInterval(tryInitGoogle, 300);
-
-  return () => clearInterval(intervalId);
-}, [dispatch]);
-
-  // Trigger the hidden Google button when the custom button is clicked
- // Trigger Google Sign-In when custom button is clicked
-const handleCustomGoogleClick = () => {
-  if (window.google) {
-    window.google.accounts.id.prompt((notification) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        // Fallback: if the One Tap prompt doesn't show, click the hidden rendered button
-        const hiddenButton = googleButtonRef.current?.querySelector(
-          'div[role="button"]'
-        );
-        if (hiddenButton) {
-          hiddenButton.click();
-        } else {
-          toast.error("Google Sign-In is still loading, please try again.");
-        }
+        clearInterval(intervalId);
       }
-    });
-  } else {
-    toast.error("Google Sign-In is still loading, please try again.");
-  }
-};
+    };
+
+    tryInitGoogle();
+    intervalId = setInterval(tryInitGoogle, 300);
+
+    return () => clearInterval(intervalId);
+  }, [dispatch]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -194,21 +169,21 @@ const handleCustomGoogleClick = () => {
           <div className="flex-1 border-t"></div>
         </div>
 
-        {/* Custom-styled Google button (visible) */}
-        <button
-          type="button"
-          onClick={handleCustomGoogleClick}
-          className="w-full flex items-center justify-center gap-3 border border-slate-300 rounded-2xl py-4 font-semibold text-slate-700 hover:bg-slate-50 transition mb-6"
-        >
-          <FcGoogle size={22} />
-          Continue with Google
-        </button>
+        {/* Google Sign-In: custom visual + real invisible Google button stacked on top */}
+        <div className="relative w-full mb-6" style={{ height: "56px" }}>
+          {/* Custom-styled visual (not clickable, purely decorative) */}
+          <div className="absolute inset-0 flex items-center justify-center gap-3 border border-slate-300 rounded-2xl font-semibold text-slate-700 bg-white pointer-events-none">
+            <FcGoogle size={22} />
+            Continue with Google
+          </div>
 
-        {/* Hidden real Google button (Google requires this to actually exist in the DOM) */}
-        <div
-          ref={googleButtonRef}
-          style={{ position: "absolute", opacity: 0, pointerEvents: "none", height: 0, overflow: "hidden" }}
-        ></div>
+          {/* Real Google button - invisible, sits on top, receives the actual click */}
+          <div
+            ref={googleButtonRef}
+            className="absolute inset-0 opacity-0"
+            style={{ overflow: "hidden" }}
+          ></div>
+        </div>
 
         <div className="text-center">
           <Link
