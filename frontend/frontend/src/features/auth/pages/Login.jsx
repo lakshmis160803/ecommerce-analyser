@@ -4,11 +4,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { login, googleLogin } from "../store/authSlice";
 import { toast } from "react-toastify";
+import { FcGoogle } from "react-icons/fc"; // npm install react-icons if not already
 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const googleButtonRef = useRef(null);
+  const googleButtonRef = useRef(null); // hidden real Google button
+  const hiddenGoogleBtnWrapperRef = useRef(null);
 
   const { isAuthenticated, loading, error } = useSelector((state) => state.auth);
 
@@ -26,7 +28,7 @@ const Login = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  // Render Google Sign-In button
+  // Initialize Google Sign-In and render the REAL button hidden
   useEffect(() => {
     if (window.google && googleButtonRef.current) {
       window.google.accounts.id.initialize({
@@ -39,14 +41,26 @@ const Login = () => {
         },
       });
 
+      // Render Google's real button into the hidden wrapper
       window.google.accounts.id.renderButton(googleButtonRef.current, {
         theme: "outline",
         size: "large",
         width: 320,
-        text: "continue_with",
       });
     }
   }, [dispatch]);
+
+  // Trigger the hidden Google button when the custom button is clicked
+  const handleCustomGoogleClick = () => {
+    const hiddenButton = googleButtonRef.current?.querySelector(
+      'div[role="button"]'
+    );
+    if (hiddenButton) {
+      hiddenButton.click();
+    } else {
+      toast.error("Google Sign-In is still loading, please try again.");
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -158,8 +172,21 @@ const Login = () => {
           <div className="flex-1 border-t"></div>
         </div>
 
-        {/* Google Sign-In button */}
-        <div ref={googleButtonRef} className="flex justify-center mb-6"></div>
+        {/* Custom-styled Google button (visible) */}
+        <button
+          type="button"
+          onClick={handleCustomGoogleClick}
+          className="w-full flex items-center justify-center gap-3 border border-slate-300 rounded-2xl py-4 font-semibold text-slate-700 hover:bg-slate-50 transition mb-6"
+        >
+          <FcGoogle size={22} />
+          Continue with Google
+        </button>
+
+        {/* Hidden real Google button (Google requires this to actually exist in the DOM) */}
+        <div
+          ref={googleButtonRef}
+          style={{ position: "absolute", opacity: 0, pointerEvents: "none", height: 0, overflow: "hidden" }}
+        ></div>
 
         <div className="text-center">
           <Link
