@@ -29,7 +29,11 @@ const Login = () => {
   }, [isAuthenticated, navigate]);
 
   // Initialize Google Sign-In and render the REAL button hidden
-  useEffect(() => {
+ // Initialize Google Sign-In and render the REAL button hidden
+useEffect(() => {
+  let intervalId;
+
+  const tryInitGoogle = () => {
     if (window.google && googleButtonRef.current) {
       window.google.accounts.id.initialize({
         client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
@@ -41,14 +45,22 @@ const Login = () => {
         },
       });
 
-      // Render Google's real button into the hidden wrapper
       window.google.accounts.id.renderButton(googleButtonRef.current, {
         theme: "outline",
         size: "large",
         width: 320,
       });
+
+      clearInterval(intervalId);
     }
-  }, [dispatch]);
+  };
+
+  // Try immediately, then retry every 300ms until Google's script loads
+  tryInitGoogle();
+  intervalId = setInterval(tryInitGoogle, 300);
+
+  return () => clearInterval(intervalId);
+}, [dispatch]);
 
   // Trigger the hidden Google button when the custom button is clicked
   const handleCustomGoogleClick = () => {
