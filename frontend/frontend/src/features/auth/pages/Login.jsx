@@ -63,16 +63,26 @@ useEffect(() => {
 }, [dispatch]);
 
   // Trigger the hidden Google button when the custom button is clicked
-  const handleCustomGoogleClick = () => {
-    const hiddenButton = googleButtonRef.current?.querySelector(
-      'div[role="button"]'
-    );
-    if (hiddenButton) {
-      hiddenButton.click();
-    } else {
-      toast.error("Google Sign-In is still loading, please try again.");
-    }
-  };
+ // Trigger Google Sign-In when custom button is clicked
+const handleCustomGoogleClick = () => {
+  if (window.google) {
+    window.google.accounts.id.prompt((notification) => {
+      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+        // Fallback: if the One Tap prompt doesn't show, click the hidden rendered button
+        const hiddenButton = googleButtonRef.current?.querySelector(
+          'div[role="button"]'
+        );
+        if (hiddenButton) {
+          hiddenButton.click();
+        } else {
+          toast.error("Google Sign-In is still loading, please try again.");
+        }
+      }
+    });
+  } else {
+    toast.error("Google Sign-In is still loading, please try again.");
+  }
+};
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
