@@ -10,10 +10,12 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const googleButtonRef = useRef(null);
+  const googleWrapperRef = useRef(null);
 
   const { isAuthenticated, loading, error } = useSelector((state) => state.auth);
 
   const [showPassword, setShowPassword] = useState(false);
+  const [btnWidth, setBtnWidth] = useState(320);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -27,12 +29,26 @@ const Login = () => {
     }
   }, [isAuthenticated, navigate]);
 
+  // Track the actual rendered width of the button wrapper so the
+  // real Google button always matches the visible custom button size.
+  useEffect(() => {
+    if (!googleWrapperRef.current) return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      const width = Math.floor(entry.contentRect.width);
+      if (width > 0) setBtnWidth(width);
+    });
+
+    observer.observe(googleWrapperRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   // Initialize Google Sign-In and render the REAL button (invisible, stacked on top of custom UI)
   useEffect(() => {
     let intervalId;
 
     const tryInitGoogle = () => {
-      if (window.google && googleButtonRef.current) {
+      if (window.google && googleButtonRef.current && btnWidth) {
         window.google.accounts.id.initialize({
           client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
           callback: (response) => {
@@ -43,10 +59,13 @@ const Login = () => {
           },
         });
 
+        // Clear any previous render before re-rendering at the new width
+        googleButtonRef.current.innerHTML = "";
+
         window.google.accounts.id.renderButton(googleButtonRef.current, {
           theme: "outline",
           size: "large",
-          width: 320,
+          width: btnWidth, // matches the actual container width now
         });
 
         clearInterval(intervalId);
@@ -57,7 +76,7 @@ const Login = () => {
     intervalId = setInterval(tryInitGoogle, 300);
 
     return () => clearInterval(intervalId);
-  }, [dispatch]);
+  }, [dispatch, btnWidth]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -170,7 +189,11 @@ const Login = () => {
         </div>
 
         {/* Google Sign-In: custom visual + real invisible Google button stacked on top */}
-        <div className="relative w-full mb-6" style={{ height: "56px" }}>
+        <div
+          ref={googleWrapperRef}
+          className="relative w-full mb-6"
+          style={{ height: "56px" }}
+        >
           {/* Custom-styled visual (not clickable, purely decorative) */}
           <div className="absolute inset-0 flex items-center justify-center gap-3 border border-slate-300 rounded-2xl font-semibold text-slate-700 bg-white pointer-events-none">
             <FcGoogle size={22} />
