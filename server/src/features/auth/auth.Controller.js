@@ -334,7 +334,7 @@ export const resetPassword = async (req, res) => {
   }
 };
 
-// GOOGLE SIGN-IN
+
 export const googleAuth = async (req, res) => {
   try {
     const { credential } = req.body;

@@ -14,6 +14,7 @@ import inventoryRoutes from "./src/features/inventory/inventory.routes.js"
 import reportRoutes from "./src/features/reports/report.routes.js"
 import notificationRoutes from "./src/features/notifications/notificationRoutes.js"; // fixed: was missing "src/"
 import errorHandler from "./src/middleware/errorMiddleware.js"
+import aiRoutes from "./src/features/chatbot/ai.routes.js";
 
 
 dotenv.config();
@@ -28,13 +29,13 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-   
+      
       if (!origin) return callback(null, true);
-
+      
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-
+      
       console.warn("Blocked by CORS:", origin);
       return callback(new Error("Not allowed by CORS"));
     },
@@ -68,6 +69,7 @@ app.use("/api/customers",customerRoutes)
 app.use("/api/regional",regionalRoutes)
 app.use("/api/inventory",inventoryRoutes)
 app.use("/api/reports",reportRoutes)
+app.use("/api/ai", aiRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.get("/", (req, res) => {
   res.send("API Running");
