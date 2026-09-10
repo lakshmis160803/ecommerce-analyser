@@ -2,7 +2,7 @@
 // This is NOT a full controller — just the pattern to drop into
 // addProduct, uploadProducts, and any future "updateStock" endpoint.
 
-import { sendToUser } from "../notifications/notificationManager.js"; // adjust path
+import { sendToUser } from "../notifications/notificationManager.js"; 
 
 const LOW_STOCK_THRESHOLD = 20;
 

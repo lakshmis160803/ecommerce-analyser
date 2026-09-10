@@ -221,9 +221,13 @@ export const ORDER_FIELD_ALIASES = {
 };
 
 // ✅ Single shared key normalizer (used by both product & order mapping)
-export const normalizeKey = (key) =>
-  key.toLowerCase().replace(/[\s\-\.]+/g, "_");
-
+export const normalizeKey = (key) => {
+  return String(key)
+    .trim()
+    .toLowerCase()
+    .replace(/[\s\-\.\/]+/g, "_")
+    .replace(/_+/g, "_");
+};
 export const autoMapFields = (row) => {
   if (!row) return {};
 
@@ -301,23 +305,56 @@ export const detectFileType = (row) => {
 
   const headers = Object.keys(row).map(normalizeKey);
 
-  const countMatches = (aliasMap) =>
-    Object.values(aliasMap).reduce((count, aliasList) => {
-      const hasMatch = headers.some((header) => aliasList.includes(header));
-      return hasMatch ? count + 1 : count;
-    }, 0);
+  const has = (aliases) =>
+    aliases.some((alias) => headers.includes(normalizeKey(alias)));
 
-  const orderScore = countMatches(ORDER_FIELD_ALIASES);
-  const productScore = countMatches(FIELD_ALIASES);
+  const orderSignals = {
+    orderId: has(ORDER_FIELD_ALIASES.orderId),
+    customer: has(ORDER_FIELD_ALIASES.customerName),
+    quantity: has(ORDER_FIELD_ALIASES.quantity),
+    orderDate: has(ORDER_FIELD_ALIASES.orderDate),
+  };
 
-  console.log("🔍 detectFileType", { orderScore, productScore });
-  const hasOrderId = headers.some((h) => ORDER_FIELD_ALIASES.orderId.includes(h));
-  const hasCustomer = headers.some((h) => ORDER_FIELD_ALIASES.customerName.includes(h));
-  const hasOrderDate = headers.some((h) => ORDER_FIELD_ALIASES.orderDate.includes(h));
+  const productSignals = {
+    productId: has(FIELD_ALIASES.productId),
+    productName: has(FIELD_ALIASES.productName),
+    sku: has(FIELD_ALIASES.sku),
+    category: has(FIELD_ALIASES.category),
+    brand: has(FIELD_ALIASES.brand),
+    stock: has(FIELD_ALIASES.stock),
+    rating: has(FIELD_ALIASES.rating),
+  };
 
-  if (hasOrderId || hasCustomer || hasOrderDate) {
+  const orderScore = Object.values(orderSignals).filter(Boolean).length;
+  const productScore = Object.values(productSignals).filter(Boolean).length;
+
+  console.log("🔍 Dataset detection:", {
+    headers,
+    orderSignals,
+    productSignals,
+    orderScore,
+    productScore,
+  });
+
+  // Strong order indicators
+  if (
+    (orderSignals.customer && orderSignals.quantity) ||
+    (orderSignals.orderId && orderSignals.quantity) ||
+    (orderSignals.orderId && orderSignals.orderDate)
+  ) {
     return "order";
   }
 
+  // Strong product indicators
+  if (
+    (productSignals.productName && productSignals.category) ||
+    (productSignals.productName && productSignals.brand) ||
+    (productSignals.sku && productSignals.productName) ||
+    (productSignals.stock && productSignals.productName)
+  ) {
+    return "product";
+  }
+
+  // Fall back to score
   return orderScore > productScore ? "order" : "product";
 };

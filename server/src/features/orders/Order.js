@@ -3,24 +3,48 @@ import mongoose from "mongoose";
 const orderSchema = new mongoose.Schema(
   {
     orderId: String,
+
     customerName: String,
+
     productName: String,
-    quantity: Number,
-    price: Number,
+
+    quantity: {
+      type: Number,
+      default: null,
+    },
+
+    price: {
+      type: Number,
+      default: null,
+    },
+
     region: String,
+
     orderDate: Date,
-    status: { type: String, default: "Completed" },
+
+    status: {
+      type: String,
+      default: "Completed",
+    },
+
+    customFields: {
+      type: Object,
+      default: {},
+    },
 
     uploadId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "UploadHistory",
     },
+
     userId: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "User",
-},
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 export default mongoose.model("Order", orderSchema);

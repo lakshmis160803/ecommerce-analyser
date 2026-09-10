@@ -1,13 +1,26 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../api/axiosInstance";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, PieChart, Pie, Cell, Legend,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
 } from "recharts";
 
 const COLORS = [
-  "#7C3AED", "#06B6D4", "#10B981",
-  "#F59E0B", "#EF4444", "#EC4899", "#6366F1",
+  "#7C3AED",
+  "#06B6D4",
+  "#10B981",
+  "#F59E0B",
+  "#EF4444",
+  "#EC4899",
+  "#6366F1",
 ];
 
 const ProductAnalysis = () => {
@@ -15,25 +28,29 @@ const ProductAnalysis = () => {
   const [productData, setProductData] = useState([]);
   const [categoryData, setCategoryData] = useState([]);
   const [loading, setLoading] = useState(false);
+
   const [stats, setStats] = useState({});
+
   const [showAllProducts, setShowAllProducts] = useState(false);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("soldUnits");
   const [allProducts, setAllProducts] = useState([]);
 
-  // ✅ Fetch upload history for dropdown
-
-  // ✅ Fetch top products filtered by uploadId
+  // Fetch top products
   const fetchTopProducts = async () => {
+    try {
+      const endpoint = `/products/top-products?range=${dateRange}`;
 
-    const endpoint =
-      `/products/top-products?range=${dateRange}`;
+      const res = await axiosInstance.get(endpoint);
 
-    const res = await axiosInstance.get(endpoint);
-
-    setProductData(res.data);
-
+      setProductData(res.data);
+    } catch (error) {
+      console.log(error);
+      setProductData([]);
+    }
   };
+
+  // Fetch categories
   const fetchCategories = async () => {
     try {
       const endpoint = `/products/categories?range=${dateRange}`;
@@ -48,20 +65,21 @@ const ProductAnalysis = () => {
       setCategoryData(formatted);
     } catch (error) {
       console.log(error);
+      setCategoryData([]);
     }
   };
 
+  // Fetch all products
   const fetchAllProducts = async () => {
     try {
       console.log("Calling fetchAllProducts...");
 
-      const endpoint =
-        `/products/all-products?range=${dateRange}`;
+      const endpoint = `/products/all-products?range=${dateRange}`;
 
       console.log(endpoint);
 
-
       const res = await axiosInstance.get(endpoint);
+
       console.log("Products received:", res.data.length);
       console.log(res.data);
 
@@ -72,10 +90,10 @@ const ProductAnalysis = () => {
     }
   };
 
+  // Fetch dashboard stats
   const fetchDashboardStats = async () => {
     try {
-      const endpoint =
-        `/products/dashboard?range=${dateRange}`;
+      const endpoint = `/products/dashboard?range=${dateRange}`;
 
       const res = await axiosInstance.get(endpoint);
 
@@ -87,15 +105,14 @@ const ProductAnalysis = () => {
     }
   };
 
-  // ✅ Fetch categories filtered by uploadId
-
+  // Fetch all products when modal is opened
   useEffect(() => {
     if (showAllProducts) {
       fetchAllProducts();
     }
   }, [showAllProducts, dateRange]);
 
-  // ✅ Re-fetch charts when upload selection changes
+  // Reload analysis when date range changes
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -112,8 +129,17 @@ const ProductAnalysis = () => {
     load();
   }, [dateRange]);
 
-  const totalSoldUnits = productData.reduce((sum, item) => sum + item.soldUnits, 0);
-  const topProduct = productData.length > 0 ? productData[0].productName : "N/A";
+  // Original sales calculation
+  const totalSoldUnits = productData.reduce(
+    (sum, item) => sum + (item.soldUnits || 0),
+    0
+  );
+
+  // Original top product calculation
+  const topProduct =
+    productData.length > 0 ? productData[0].productName : "N/A";
+
+  // Search + sorting
   const filteredProducts = [...allProducts]
     .filter((product) =>
       product.productName
@@ -123,22 +149,23 @@ const ProductAnalysis = () => {
     .sort((a, b) => {
       switch (sortBy) {
         case "price":
-          return b.price - a.price;
+          return (b.price || 0) - (a.price || 0);
 
         case "rating":
-          return b.rating - a.rating;
+          return (b.rating || 0) - (a.rating || 0);
 
         case "stock":
-          return b.stock - a.stock;
+          return (b.stock || 0) - (a.stock || 0);
 
         case "soldUnits":
-          return b.soldUnits - a.soldUnits;
+          return (b.soldUnits || 0) - (a.soldUnits || 0);
 
         default:
           return 0;
       }
     });
-    
+
+  // Category processing
   const processedCategoryData = (() => {
     const sorted = [...categoryData].sort(
       (a, b) => b.value - a.value
@@ -163,9 +190,11 @@ const ProductAnalysis = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-purple-100 p-4 sm:p-6 lg:p-8">
 
-      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6">Product Analysis</h1>
+      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6">
+        Product Analysis
+      </h1>
 
-      {/* ✅ Dataset Selector */}
+      {/* Date Range */}
       <div className="mb-8 bg-white p-5 rounded-2xl shadow">
 
         <label className="block mb-2 font-semibold">
@@ -175,7 +204,8 @@ const ProductAnalysis = () => {
         <select
           value={dateRange}
           onChange={(e) => setDateRange(e.target.value)}
-          className="border rounded-lg p-2 w-full sm:w-72">
+          className="border rounded-lg p-2 w-full sm:w-72"
+        >
           <option value="today">Today</option>
           <option value="yesterday">Yesterday</option>
           <option value="last7days">Last 7 Days</option>
@@ -192,7 +222,9 @@ const ProductAnalysis = () => {
       {/* Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
 
+        {/* Total Products */}
         <div className="bg-white p-6 rounded-3xl shadow-lg">
+
           <h3 className="text-slate-500">
             Total Products
           </h3>
@@ -200,52 +232,94 @@ const ProductAnalysis = () => {
           <p className="text-3xl font-bold text-blue-600 mt-2">
             {stats.totalProducts || 0}
           </p>
-        </div>
-        <div className="bg-white p-6 rounded-3xl shadow-lg">
-          <h3 className="text-slate-500">Top Product</h3>
-          <p className="text-xl lg:text-2xl break-words font-bold text-violet-600 mt-2">{topProduct}</p>
+
         </div>
 
+        {/* Top Product */}
         <div className="bg-white p-6 rounded-3xl shadow-lg">
-          <h3 className="text-slate-500">Categories</h3>
-          <p className="text-2xl font-bold text-cyan-600 mt-2">{categoryData.length}</p>
+
+          <h3 className="text-slate-500">
+            Top Product
+          </h3>
+
+          <p className="text-xl lg:text-2xl break-words font-bold text-violet-600 mt-2">
+            {topProduct}
+          </p>
+
         </div>
 
+        {/* Categories */}
         <div className="bg-white p-6 rounded-3xl shadow-lg">
-          <h3 className="text-slate-500">Total Sold Units</h3>
-          <p className="text-2xl font-bold text-green-600 mt-2">{totalSoldUnits}</p>
+
+          <h3 className="text-slate-500">
+            Categories
+          </h3>
+
+          <p className="text-2xl font-bold text-cyan-600 mt-2">
+            {categoryData.length}
+          </p>
+
+        </div>
+
+        {/* Total Sold Units */}
+        <div className="bg-white p-6 rounded-3xl shadow-lg">
+
+          <h3 className="text-slate-500">
+            Total Sold Units
+          </h3>
+
+          <p className="text-2xl font-bold text-green-600 mt-2">
+            {totalSoldUnits.toLocaleString()}
+          </p>
+
         </div>
 
       </div>
 
       {/* Charts */}
-      <div className={`grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6 transition-opacity ${loading ? "opacity-40" : "opacity-100"}`}>
+      <div
+        className={`grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6 transition-opacity ${
+          loading ? "opacity-40" : "opacity-100"
+        }`}
+      >
 
-        {/* Top Products Bar Chart */}
+        {/* Top Products */}
         <div className="bg-white p-6 rounded-3xl shadow-lg">
-          <div className="flex justify-between items-center mb-4">
 
-            <h2 className="text-xl font-semibold">
-              Top Selling Products
-            </h2>
-            <p className="text-sm text-slate-500 mt-3">
-              Showing {productData.length} of {stats.totalProducts} Products
-            </p>
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
+
+            <div>
+              <h2 className="text-xl font-semibold">
+                Top Selling Products
+              </h2>
+
+              <p className="text-sm text-slate-500 mt-1">
+                Showing {productData.length} of{" "}
+                {stats.totalProducts || 0} Products
+              </p>
+            </div>
+
             <button
               onClick={() => setShowAllProducts(true)}
-              className="mt-6 bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 rounded-lg"
+              className="bg-violet-600 hover:bg-violet-700 text-white px-5 py-2 rounded-lg"
             >
               View All Products
             </button>
 
           </div>
+
           {productData.length === 0 ? (
+
             <div className="h-64 flex items-center justify-center text-slate-400">
-              No data for selected upload
+              No data for selected period
             </div>
+
           ) : (
+
             <ResponsiveContainer width="100%" height={350}>
+
               <BarChart data={productData}>
+
                 <XAxis
                   dataKey="productName"
                   angle={-45}
@@ -253,22 +327,35 @@ const ProductAnalysis = () => {
                   height={80}
                   tick={{ fontSize: 10 }}
                   tickFormatter={(value) =>
-                    value.length > 10
+                    value?.length > 10
                       ? value.slice(0, 10) + "..."
                       : value
                   }
                 />
+
                 <YAxis />
+
                 <Tooltip />
-                <Bar dataKey="soldUnits" fill="#7C3AED" radius={[10, 10, 0, 0]} />
+
+                <Bar
+                  dataKey="soldUnits"
+                  fill="#7C3AED"
+                  radius={[10, 10, 0, 0]}
+                />
+
               </BarChart>
+
             </ResponsiveContainer>
+
           )}
+
         </div>
 
+        {/* Category Distribution */}
         <div className="bg-white p-6 rounded-3xl shadow-lg">
 
           <div className="flex justify-between items-center mb-4">
+
             <h2 className="text-xl font-semibold">
               Category Distribution
             </h2>
@@ -276,14 +363,19 @@ const ProductAnalysis = () => {
             <span className="text-sm text-slate-500">
               Top Categories
             </span>
+
           </div>
 
           {categoryData.length === 0 ? (
+
             <div className="h-64 flex items-center justify-center text-slate-400">
-              No data for selected upload
+              No data for selected period
             </div>
+
           ) : (
+
             <ResponsiveContainer width="100%" height={350}>
+
               <PieChart>
 
                 <Pie
@@ -297,12 +389,16 @@ const ProductAnalysis = () => {
                   paddingAngle={3}
                   label={false}
                 >
+
                   {processedCategoryData.map((entry, index) => (
+
                     <Cell
                       key={index}
                       fill={COLORS[index % COLORS.length]}
                     />
+
                   ))}
+
                 </Pie>
 
                 <Tooltip />
@@ -319,13 +415,18 @@ const ProductAnalysis = () => {
                 />
 
               </PieChart>
+
             </ResponsiveContainer>
+
           )}
 
         </div>
 
       </div>
+
+      {/* All Products Modal */}
       {showAllProducts && (
+
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
 
           <div className="bg-white rounded-2xl shadow-2xl w-[98%] sm:w-[95%] max-w-7xl h-[90vh] overflow-hidden">
@@ -334,6 +435,7 @@ const ProductAnalysis = () => {
             <div className="flex justify-between items-center border-b px-8 py-5">
 
               <div>
+
                 <h2 className="text-3xl font-bold">
                   📦 All Products
                 </h2>
@@ -341,6 +443,7 @@ const ProductAnalysis = () => {
                 <p className="text-gray-500">
                   {filteredProducts.length} Products
                 </p>
+
               </div>
 
               <button
@@ -381,45 +484,76 @@ const ProductAnalysis = () => {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 p-6">
 
               <div className="bg-violet-50 rounded-xl p-4">
-                <p className="text-gray-500">Products</p>
+
+                <p className="text-gray-500">
+                  Products
+                </p>
+
                 <h2 className="text-3xl font-bold">
                   {filteredProducts.length}
                 </h2>
+
               </div>
 
               <div className="bg-blue-50 rounded-xl p-4">
-                <p className="text-gray-500">Average Price</p>
+
+                <p className="text-gray-500">
+                  Average Price
+                </p>
+
                 <h2 className="text-3xl font-bold">
+
                   ₹
                   {filteredProducts.length
                     ? Math.round(
-                      filteredProducts.reduce((a, b) => a + b.price, 0) /
-                      filteredProducts.length
-                    )
+                        filteredProducts.reduce(
+                          (a, b) => a + (b.price || 0),
+                          0
+                        ) / filteredProducts.length
+                      )
                     : 0}
+
                 </h2>
+
               </div>
 
               <div className="bg-yellow-50 rounded-xl p-4">
-                <p className="text-gray-500">Average Rating</p>
+
+                <p className="text-gray-500">
+                  Average Rating
+                </p>
+
                 <h2 className="text-3xl font-bold">
+
                   ⭐
                   {filteredProducts.length
                     ? (
-                      filteredProducts.reduce(
-                        (a, b) => a + b.rating,
-                        0
-                      ) / filteredProducts.length
-                    ).toFixed(1)
+                        filteredProducts.reduce(
+                          (a, b) => a + (b.rating || 0),
+                          0
+                        ) / filteredProducts.length
+                      ).toFixed(1)
                     : 0}
+
                 </h2>
+
               </div>
 
               <div className="bg-green-50 rounded-xl p-4">
-                <p className="text-gray-500">Total Stock</p>
+
+                <p className="text-gray-500">
+                  Total Stock
+                </p>
+
                 <h2 className="text-3xl font-bold">
-                  {filteredProducts.reduce((a, b) => a + b.stock, 0)}
+
+                  {filteredProducts.reduce(
+                    (a, b) => a + (b.stock || 0),
+                    0
+                  )}
+
                 </h2>
+
               </div>
 
             </div>
@@ -433,13 +567,33 @@ const ProductAnalysis = () => {
 
                   <tr>
 
-                    <th className="p-4 text-left">Product</th>
-                    <th>Category</th>
-                    <th>Brand</th>
-                    <th>Price</th>
-                    <th>Stock</th>
-                    <th>Sold</th>
-                    <th>Rating</th>
+                    <th className="p-4 text-left">
+                      Product
+                    </th>
+
+                    <th>
+                      Category
+                    </th>
+
+                    <th>
+                      Brand
+                    </th>
+
+                    <th>
+                      Price
+                    </th>
+
+                    <th>
+                      Stock
+                    </th>
+
+                    <th>
+                      Sold
+                    </th>
+
+                    <th>
+                      Rating
+                    </th>
 
                   </tr>
 
@@ -451,31 +605,39 @@ const ProductAnalysis = () => {
 
                     <tr
                       key={product._id}
-                      className={`${index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                        } hover:bg-violet-50`}
+                      className={`${
+                        index % 2 === 0
+                          ? "bg-white"
+                          : "bg-gray-50"
+                      } hover:bg-violet-50`}
                     >
 
                       <td className="p-4 font-medium">
                         {product.productName}
                       </td>
 
-                      <td>{product.category}</td>
+                      <td>
+                        {product.category}
+                      </td>
 
-                      <td>{product.brand}</td>
+                      <td>
+                        {product.brand}
+                      </td>
 
-                      <td>₹{product.price}</td>
+                      <td>
+                        ₹{product.price}
+                      </td>
 
                       <td>
 
                         <span
-                          className={`px-3 py-1 rounded-full text-white text-sm
-
-                    ${product.stock > 100
+                          className={`px-3 py-1 rounded-full text-white text-sm ${
+                            product.stock > 100
                               ? "bg-green-500"
                               : product.stock > 20
-                                ? "bg-yellow-500"
-                                : "bg-red-500"
-                            }`}
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
+                          }`}
                         >
                           {product.stock}
                         </span>
@@ -490,7 +652,9 @@ const ProductAnalysis = () => {
 
                       </td>
 
-                      <td>⭐ {product.rating}</td>
+                      <td>
+                        ⭐ {product.rating}
+                      </td>
 
                     </tr>
 
@@ -515,12 +679,15 @@ const ProductAnalysis = () => {
               >
                 Close
               </button>
+
             </div>
 
           </div>
 
         </div>
+
       )}
+
     </div>
   );
 };

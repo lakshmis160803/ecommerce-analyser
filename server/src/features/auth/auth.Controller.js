@@ -8,7 +8,6 @@ import { sendEmail } from "../../features/utils/sendEmail.js"
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// REGISTER
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;

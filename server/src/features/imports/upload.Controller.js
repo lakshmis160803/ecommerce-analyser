@@ -3,7 +3,7 @@ import UploadHistory from "./UploadHistory.js";
 import Customer from "../customers/Customer.js";
 import mongoose from "mongoose";
 import asyncHandler from "../../middleware/asyncHandler.js"
-import { sendToUser } from "../notifications/notificationManager.js"; // adjust path to match your project
+import { sendToUser } from "../notifications/notificationManager.js"; 
 
 const LOW_STOCK_THRESHOLD = 20;
 
@@ -92,7 +92,8 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
   const matchFilter = {
     userId: new mongoose.Types.ObjectId(req.user.id),
 
-    ...(uploadId && mongoose.Types.ObjectId.isValid(uploadId)
+    ...(uploadId &&
+    mongoose.Types.ObjectId.isValid(uploadId)
       ? {
           uploadId: new mongoose.Types.ObjectId(uploadId),
         }
@@ -100,15 +101,96 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
   };
 
   const stats = await Product.aggregate([
-    { $match: matchFilter },
+    {
+      $match: matchFilter,
+    },
+
     {
       $group: {
         _id: null,
-        totalProducts: { $sum: 1 },
-        totalRevenue: { $sum: { $multiply: ["$price", "$soldUnits"] } },
-        totalStock: { $sum: "$stock" },
-        totalSoldUnits: { $sum: "$soldUnits" },
-        avgRating: { $avg: "$rating" },
+
+        totalProducts: {
+          $sum: 1,
+        },
+
+        totalStock: {
+          $sum: {
+            $cond: [
+              { $ne: ["$stock", null] },
+              "$stock",
+              0,
+            ],
+          },
+        },
+
+        totalSoldUnits: {
+          $sum: {
+            $cond: [
+              { $ne: ["$soldUnits", null] },
+              "$soldUnits",
+              0,
+            ],
+          },
+        },
+
+        soldUnitsCount: {
+          $sum: {
+            $cond: [
+              { $ne: ["$soldUnits", null] },
+              1,
+              0,
+            ],
+          },
+        },
+
+        totalRevenue: {
+          $sum: {
+            $cond: [
+              {
+                $and: [
+                  { $ne: ["$price", null] },
+                  { $ne: ["$soldUnits", null] },
+                ],
+              },
+              {
+                $multiply: [
+                  "$price",
+                  "$soldUnits",
+                ],
+              },
+              0,
+            ],
+          },
+        },
+
+        revenueCount: {
+          $sum: {
+            $cond: [
+              {
+                $and: [
+                  { $ne: ["$price", null] },
+                  { $ne: ["$soldUnits", null] },
+                ],
+              },
+              1,
+              0,
+            ],
+          },
+        },
+
+        avgRating: {
+          $avg: "$rating",
+        },
+
+        ratingCount: {
+          $sum: {
+            $cond: [
+              { $ne: ["$rating", null] },
+              1,
+              0,
+            ],
+          },
+        },
       },
     },
   ]);
@@ -116,15 +198,50 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
   if (!stats.length) {
     return res.status(200).json({
       totalProducts: 0,
-      totalRevenue: 0,
-      totalStock: 0,
-      totalSoldUnits: 0,
-      avgRating: 0,
+      totalStock: null,
+
+      totalSoldUnits: null,
+      hasSoldUnits: false,
+
+      totalRevenue: null,
+      hasRevenue: false,
+
+      avgRating: null,
+      hasRating: false,
     });
   }
 
-  const { _id, ...result } = stats[0];
-  res.status(200).json(result);
+  const s = stats[0];
+
+  return res.status(200).json({
+    totalProducts: s.totalProducts || 0,
+
+    totalStock: s.totalStock,
+
+    totalSoldUnits:
+      s.soldUnitsCount > 0
+        ? s.totalSoldUnits
+        : null,
+
+    hasSoldUnits:
+      s.soldUnitsCount > 0,
+
+    totalRevenue:
+      s.revenueCount > 0
+        ? s.totalRevenue
+        : null,
+
+    hasRevenue:
+      s.revenueCount > 0,
+
+    avgRating:
+      s.ratingCount > 0
+        ? Number(s.avgRating).toFixed(2)
+        : null,
+
+    hasRating:
+      s.ratingCount > 0,
+  });
 });
 
 export const addProduct = asyncHandler(async (req, res) => {

@@ -15,19 +15,45 @@ const productSchema = new mongoose.Schema(
     category: String,
     brand: String,
 
-    price: Number,
-    costPrice: Number,
-    discountPrice: Number,
+    price: {
+      type: Number,
+      default: null,
+    },
+
+    costPrice: {
+      type: Number,
+      default: null,
+    },
+
+    discountPrice: {
+      type: Number,
+      default: null,
+    },
+
     currency: {
       type: String,
       default: "USD",
     },
 
-    stock: Number,
-    soldUnits: Number,
+    stock: {
+      type: Number,
+      default: null,
+    },
 
-    rating: Number,
-    reviewCount: Number,
+    soldUnits: {
+      type: Number,
+      default: null,
+    },
+
+    rating: {
+      type: Number,
+      default: null,
+    },
+
+    reviewCount: {
+      type: Number,
+      default: null,
+    },
 
     region: String,
 
@@ -43,8 +69,6 @@ const productSchema = new mongoose.Schema(
 
     dateAdded: Date,
 
-    // Preserves any columns from an import that couldn't be mapped
-    // to a known field, so data isn't silently dropped.
     customFields: {
       type: Object,
       default: {},
@@ -60,7 +84,12 @@ const productSchema = new mongoose.Schema(
   }
 );
 
-// Prevents the same user from importing the exact same productId twice.
-productSchema.index({ productId: 1, userId: 1 }, { unique: true, sparse: true });
+productSchema.index(
+  { productId: 1, userId: 1 },
+  {
+    unique: true,
+    sparse: true,
+  }
+);
 
 export default mongoose.model("Product", productSchema);

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "../../../api/axiosInstance"; // adjust to your actual axios instance path
+import axios from "../../../api/axiosInstance"; // 
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");

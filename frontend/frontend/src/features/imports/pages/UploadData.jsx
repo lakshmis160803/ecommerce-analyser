@@ -46,7 +46,25 @@ const UploadData = () => {
     });
     return finalMapping;
   };
+const getNumberOrNull = (row, column) => {
+  if (!column) return null;
 
+  const value = row[column];
+
+  if (
+    value === undefined ||
+    value === null ||
+    String(value).trim() === ""
+  ) {
+    return null;
+  }
+
+  const number = Number(
+    String(value).replace(/,/g, "").replace(/[₹$€£]/g, "").trim()
+  );
+
+  return Number.isFinite(number) ? number : null;
+};
   const buildPayload = (rows) => {
     const finalMapping = buildFinalMapping();
 
@@ -69,43 +87,75 @@ const UploadData = () => {
     let transformedData = [];
 
     if (fileType === "product") {
-      transformedData = rows.map((row) => ({
-        // Fix: fall back to null (not "") so multiple rows with an
-        // unmapped/blank ID don't collide against a unique index.
-        productId: row[finalMapping.productId] || null,
-        sku: row[finalMapping.sku] || "",
-        productName: row[finalMapping.productName] || "",
-        description: row[finalMapping.description] || "",
-        category: row[finalMapping.category] || "",
-        brand: row[finalMapping.brand] || "",
-        price: Number(row[finalMapping.price]) || 0,
-        costPrice: Number(row[finalMapping.costPrice]) || 0,
-        discountPrice: row[finalMapping.discountPrice]
-          ? Number(row[finalMapping.discountPrice])
-          : undefined,
-        currency: row[finalMapping.currency] || "USD",
-        stock: Number(row[finalMapping.stock]) || 0,
-        soldUnits: Number(row[finalMapping.soldUnits]) || 0,
-        rating: Number(row[finalMapping.rating]) || 0,
-        reviewCount: row[finalMapping.reviewCount]
-          ? Number(row[finalMapping.reviewCount])
-          : 0,
-        region: row[finalMapping.region] || "",
-        images: row[finalMapping.images]
-          ? String(row[finalMapping.images])
-              .split(",")
-              .map((url) => url.trim())
-              .filter(Boolean)
-          : [],
-        customFields: buildCustomFields(row),
-      }));
+  transformedData = rows.map((row) => ({
+  productId: row[finalMapping.productId] || null,
+
+  sku: row[finalMapping.sku] || "",
+
+  productName: row[finalMapping.productName] || "",
+
+  description: row[finalMapping.description] || "",
+
+  category: row[finalMapping.category] || "",
+
+  brand: row[finalMapping.brand] || "",
+
+  price: getNumberOrNull(row, finalMapping.price),
+
+  costPrice: getNumberOrNull(row, finalMapping.costPrice),
+
+  discountPrice: getNumberOrNull(
+    row,
+    finalMapping.discountPrice
+  ),
+
+  currency: row[finalMapping.currency] || "USD",
+
+  stock: getNumberOrNull(
+    row,
+    finalMapping.stock
+  ),
+
+  soldUnits: getNumberOrNull(
+    row,
+    finalMapping.soldUnits
+  ),
+
+  rating: getNumberOrNull(
+    row,
+    finalMapping.rating
+  ),
+
+  reviewCount: getNumberOrNull(
+    row,
+    finalMapping.reviewCount
+  ),
+
+  region: row[finalMapping.region] || "",
+
+  images: row[finalMapping.images]
+    ? String(row[finalMapping.images])
+        .split(",")
+        .map((url) => url.trim())
+        .filter(Boolean)
+    : [],
+
+  customFields: buildCustomFields(row),
+}));
     } else {
       transformedData = rows.map((row) => ({
         orderId: row[finalMapping.orderId] || null,
         customerName: row[finalMapping.customerName] || "",
         productName: row[finalMapping.productName] || "",
-        quantity: Number(row[finalMapping.quantity]) || 0,
-        price: Number(row[finalMapping.price]) || 0,
+        quantity: getNumberOrNull(
+  row,
+  finalMapping.quantity
+),
+
+price: getNumberOrNull(
+  row,
+  finalMapping.price
+),
         region: row[finalMapping.region] || "",
         orderDate: row[finalMapping.orderDate]
           ? new Date(row[finalMapping.orderDate])
